@@ -315,7 +315,7 @@ dist <- function(x,...){ UseMethod("dist",x) }
 #' @rdname dist
 #' @export
 dist.default <- function(x,...){stats::dist(x,...)}
-#' @rdname dist DZdata
+#' @rdname dist
 #' @export
 dist.DZdata <- function(x,metric=NULL,...) {
     if (!is.null(metric)) x$metric <- metric
@@ -789,7 +789,7 @@ setmM <- function(x,from=NA,to=NA,log=FALSE){
 #' automatically
 #' @param bw the bandwidth of the KDE. If NULL, bw will be calculated
 #' automatically using \code{botev()}
-#' #' @param adaptive boolean flag controlling if the adaptive KDE
+#' @param adaptive boolean flag controlling if the adaptive KDE
 #' modifier of Abramson (1982) is used
 #' @param log transform the ages to a log scale if TRUE
 #' @examples
@@ -1191,13 +1191,41 @@ xyz2xy <- function(x,y,z){
     return(xy)
 }
 
+#' Calculate the number of grains required to achieve a desired level of sampling resolution
+#'
+#' Returns the number of grains that need to be analysed to decrease
+#' the likelihood of missing any fraction greater than a given size
+#' below a given level.
+#' @param f the size of the smallest resolvable fraction (0<f<1)
+#' @param p the probability that all n grains in the sample have missed
+#' at least one fraction of size f
+#' @param n, the number of grains in the sample
+#' @references Vermeesch, Pieter. "How many grains are needed for a
+#' provenance study?." Earth and Planetary Science Letters 224.3
+#' (2004): 441-451.
+#' @examples
+#' # number of grains required to be 99% that no fraction greater than 5% was missed:
+#' print(get.n(0.01))
+#' # number of grains required to be 90% that no fraction greater than 10% was missed:
+#' print(get.n(p=0.1,f=0.1))
+#' @export
+get.n <- function(p=0.05,f=0.05){
+    n <- 1
+    while(T){
+        pp <- get.p(n,f)
+        if (pp<p){ break }
+        else {n <- n+1}
+    }
+    return(n)
+}
+
 #' Calculate the probability of missing a given population fraction
 #'
 #' For a given sample size, returns the likelihood of missing any
 #' fraction greater than a given size
 #' @param n the number of grains in the detrital sample
 #' @param f the size of the smallest resolvable fraction (0<f<1)
-#' @return the probability that all N grains in the sample have missed
+#' @return the probability that all n grains in the sample have missed
 #' at least one fraction of size f
 #' @references Vermeesch, Pieter. "How many grains are needed for a
 #' provenance study?." Earth and Planetary Science Letters 224.3
@@ -1252,34 +1280,6 @@ test <- function(){
     Major <- read.HMdata("./inst/Major.csv")
     Trace <- read.HMdata("./inst/Trace.csv")
 
-#    plot(getKDE(DZ$x[['N1']],log=TRUE))
-    
-#    Q <- PT$x[,'Q']
-#    F <- PT$x[,'KF'] + PT$x[,'P']
-#    L <- PT$x[,'Lm'] + PT$x[,'Lv'] + PT$x[,'Ls']
-#    ternaryplot(60,25,15,type='QFL')
-    
-#    plot(DZ,'N1',CAD=TRUE)
-
-    KDEs <- getKDEs(DZ)
-    summaryplot(KDEs,ncol=4)
-    
-#    KDEs <- getKDEs(DZ,0,3000)
-#    summaryplot(KDEs,HM,PT,Major,Trace,ncol=2)
-
-#    ind <- indscal(DZ,HM)
-#    plot(ind)
-#    graphics.off()
-#    plot(getMDS(Major,classical=TRUE),nnlines=TRUE)
-    
-#    i <- match(c("N1","N2","T8","T13","N12","N13"),names(HM))
-#    foo <- subset(HM,i)
-#    summaryplot(foo,ncol=2)
-
-#    plot(indscal(DZ,HM))
-#    saveplot("TarimPCA.pdf",2)
-
-#    print(get.f(60))
 }
 
 #test()

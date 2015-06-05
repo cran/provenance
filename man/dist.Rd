@@ -2,6 +2,7 @@
 % Please edit documentation in R/provenance.R
 \name{dist}
 \alias{dist}
+\alias{dist.DZdata}
 \alias{dist.HMdata}
 \alias{dist.default}
 \title{Calculate the dissimilarity matrix between two \code{DZdata} or
@@ -10,6 +11,8 @@
 dist(x, ...)
 
 \method{dist}{default}(x, ...)
+
+\method{dist}{DZdata}(x, metric = NULL, ...)
 
 \method{dist}{HMdata}(x, metric = NULL, ...)
 }

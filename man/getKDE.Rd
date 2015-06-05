@@ -16,8 +16,7 @@ automatically}
 automatically}
 
 \item{bw}{the bandwidth of the KDE. If NULL, bw will be calculated
-automatically using \code{botev()}
-#'}
+automatically using \code{botev()}}
 
 \item{adaptive}{boolean flag controlling if the adaptive KDE
 modifier of Abramson (1982) is used}

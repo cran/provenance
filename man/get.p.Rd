@@ -12,7 +12,7 @@ get.p(n, f = 0.05)
 \item{f}{the size of the smallest resolvable fraction (0<f<1)}
 }
 \value{
-the probability that all N grains in the sample have missed
+the probability that all n grains in the sample have missed
 at least one fraction of size f
 }
 \description{

@@ -1,6 +1,6 @@
-551763759ce600e14bf9b6af8e184627 *DESCRIPTION
-074ca062d842e7557ee3c8aa7175f74d *NAMESPACE
-9ffe48ade35dd79a1075298c65325f2a *R/provenance.R
+5191789b9be17c0b6bcbccd674a81468 *DESCRIPTION
+67f2b0f66493fb487fa43d9556a866b5 *NAMESPACE
+17d29e2010cfee870d468145041c73cb *R/provenance.R
 7261d80b7d411c352b81ffa8af501b66 *inst/DZ.csv
 c5b3f63e8de5992e9b460fc80c2001cf *inst/DZerr.csv
 f330d3ecf0044d36a1e2fbd6595e62ca *inst/HM.csv
@@ -11,10 +11,11 @@ c75cb00e7c034ee1a08f6568707b7ea5 *man/KS.dist.Rd
 0ac30a93270007a52e2cf9e1fab1976a *man/SH.dist.Rd
 136bbf769d5bb2fe5e172ab5b9e4fd96 *man/botev.Rd
 2cb8c59457b4ecc466172bc37c81eaa1 *man/clr.Rd
-43eb00774dc09b959964882fa7e53826 *man/dist.Rd
+f0bc091c621723e7d9fb507e2b002b9a *man/dist.Rd
 2f4ed65e0a259400388a0c6605b72a59 *man/get.f.Rd
-e72a5d081ceb99577024ad8e727191c9 *man/get.p.Rd
-ce06f8b1aededfbf6e6113268d479fb4 *man/getKDE.Rd
+87be9374feeb6f2d9dc932c57cfdff10 *man/get.n.Rd
+bca75f634a30e89dc2bed397ed470419 *man/get.p.Rd
+4eaa31191eea40ca757edbc62e0cd866 *man/getKDE.Rd
 56b0b48d260d2623576a0be82a02c140 *man/getKDEs.Rd
 3e8a8b7c8ae5022fc1ff4f1c3062fb34 *man/getMDS.Rd
 b5013493101dd683c4e7d54b2b516742 *man/getPCA.Rd

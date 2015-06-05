@@ -1,15 +1,15 @@
 Package: provenance
 Title: Statistical Toolbox for Sedimentary Provenance Analysis
-Version: 0.1
+Version: 0.2
 Authors@R: person("Pieter", "Vermeesch", , "p.vermeesch@ucl.ac.uk", role = c("aut", "cre"))
 Description: Bundles a number of established statistical methods to facilitate the visual interpretation of large datasets in sedimentary geology. Includes functionality for adaptive kernel density estimation, multidimensional scaling, generalised procrustes analysis and individual differences scaling using a variety of dissimilarity measures. Univariate provenance proxies, such as single-grain ages or (isotopic) compositions are compared with the Kolmogorov-Smirnov dissimilarity and Sircombe-Hazelton L2-norm. Categorical provenance proxies, such as mineralogical, petrographic or chemical compositions are compared with the Aitchison and Bray-Curtis distances.
 Depends: R (>= 3.0.2)
 Imports: MASS, smacof, vegan, shapes
 License: GPL-2
 LazyData: true
-Packaged: 2015-05-26 06:39:29 UTC; pvermees
+Packaged: 2015-06-05 08:16:42 UTC; pvermees
 Author: Pieter Vermeesch [aut, cre]
 Maintainer: Pieter Vermeesch <p.vermeesch@ucl.ac.uk>
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2015-05-26 09:38:05
+Date/Publication: 2015-06-05 11:33:35
