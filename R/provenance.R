@@ -1,7 +1,7 @@
 # save plot d as a pdf file with name f
 saveplot <- function(f, d){
-    dev.set(d)
-    dev.copy2pdf(file=f)
+    grDevices::dev.set(d)
+    grDevices::dev.copy2pdf(file=f)
 }
 
 # Botev:
@@ -13,7 +13,7 @@ dct1d <- function(dat){
     # Re-order the elements of the columns of x
     dat <- c(dat[seq(1,n-1,2)], dat[seq(n,2,-2)]);
     # Multiply FFT by weights:
-    out <- Re(weight* fft(dat));
+    out <- Re(weight*stats::fft(dat));
     return(out)
 }
 
@@ -63,13 +63,13 @@ botev <- function(x){
     } else {
         N <- length(x)
     }
-    w <- hist(x,xmesh,plot=FALSE)
+    w <- graphics::hist(x,xmesh,plot=FALSE)
     initialdata <- (w$counts)/N
     initialdata <- initialdata/sum(initialdata)
     a <- dct1d(initialdata)
     II <- (1:(n-1))^2
     a2 <- (a[2:n]/2)^2
-    tstar <- tryCatch(uniroot(fixedpoint,c(0,.1),
+    tstar <- tryCatch(stats::uniroot(fixedpoint,c(0,.1),
                       N=N,II=II,a2=a2,tol=10^(-14))$root,
                       error=function(e).28*N^(-2/5))
     bandwidth <- sqrt(tstar)*R
@@ -84,22 +84,22 @@ getcommonbandwidth <- function(x){
     for (i in 1:n){
         bw[i] <- botev(x$x[[i]])
     }
-    return(median(bw))
+    return(stats::median(bw))
 }
 
 # Sircombe and Hazelton:
 # Density estimator with sample-point adaptive bandwidth
 adapt.f <- function(x,h,eval){
     f <- eval*0
-    for (i in 1:length(eval)){f[i] <- mean(dnorm(x-eval[i],0,sd=h))}
+    for (i in 1:length(eval)){f[i] <- mean(stats::dnorm(x-eval[i],0,sd=h))}
     return(f)
 }
 
 # Sircombe and Hazelton:
 sig2.con <- function(x,sigx,UCV=TRUE){
     sig2max <- max(sigx^2)
-    h <- 1.06*min(sd(x),IQR(x)/1.34)/length(x)^0.2
-    if (UCV) h <- bw.ucv(x,lower=h/20,upper=h)
+    h <- 1.06*min(stats::sd(x),stats::IQR(x)/1.34)/length(x)^0.2
+    if (UCV) h <- stats::bw.ucv(x,lower=h/20,upper=h)
     sig2.con <- sig2max+h^2
     return(sig2.con)
 }
@@ -109,7 +109,7 @@ sig2.con <- function(x,sigx,UCV=TRUE){
 Rf <- function(x,sig2,c.con){
     h1 <- sqrt(c(outer(c.con-sig2,c.con-sig2,"+")))
     xdiff <- c(outer(x,x,"-"))
-    rf <- mean(dnorm(xdiff,sd=h1))
+    rf <- mean(stats::dnorm(xdiff,sd=h1))
     return(rf)
 }
 
@@ -146,7 +146,7 @@ SH.dist <- function(x,i,j,c.con=0){
     rfY <- Rf(Y,sig2Y,c.con)
     h1 <- sqrt(c(outer(c.con-sig2X,c.con-sig2Y,"+")))
     XYdiff <- c(outer(X,Y,"-"))
-    Itmp <- mean(dnorm(XYdiff,sd=h1))
+    Itmp <- mean(stats::dnorm(XYdiff,sd=h1))
     dXY <- rfX+rfY-2*Itmp
     dXY <- sqrt(dXY)
     return(dXY)
@@ -183,6 +183,9 @@ getc2 <- function(x){
 #' program will default back to the Kolmogorov-Smirnov dissimilarity.
 #' @param xlabel an optional string specifying the nature and units of
 #' the data.  This string is used to label kernel density estimates.
+#' @param colmap an optional string with the name of one of R's
+#' built-in colour palettes (e.g., heat.colors, terrain.colors,
+#' topo.colors, cm.colors), which are to be used for plotting the data.
 #' @return an object of class \code{DZdata}, i.e. a list with the
 #' following items:
 #' 
@@ -200,7 +203,7 @@ getc2 <- function(x){
 #' DZ <- read.DZdata(fname)
 #' plot(getKDE(DZ$x$N1))
 #' @export
-read.DZdata <- function(datafile,errorfile=NULL,metric="KS",xlabel="age [Ma]") {
+read.DZdata <- function(datafile,errorfile=NULL,metric="KS",xlabel="age [Ma]",colmap='rainbow') {
     out <- list()
     if (metric=="SH" & is.null(errorfile)){
         stop(paste0("The input file must include the analytical errors",
@@ -210,13 +213,14 @@ read.DZdata <- function(datafile,errorfile=NULL,metric="KS",xlabel="age [Ma]") {
     out$metric <- metric
     out$x <- list()
     out$err <- list()
-    dat <- read.csv(datafile,header=TRUE)
+    out$colmap <- colmap
+    dat <- utils::read.csv(datafile,header=TRUE)
     ns = length(dat)
     for (i in 1:ns){
         out$x[[names(dat)[i]]] = dat[!is.na(dat[,i]),i]
     }
     if (!is.null(errorfile)){
-        err <- read.csv(errorfile,header=TRUE)
+        err <- utils::read.csv(errorfile,header=TRUE)
         for (i in 1:ns) {
             out$err[[names(dat)[i]]] = dat[!is.na(err[,i]),i]
         }
@@ -239,6 +243,9 @@ read.DZdata <- function(datafile,errorfile=NULL,metric="KS",xlabel="age [Ma]") {
 #' "aitchison" (for Aitchison's central logratio distance). If
 #' omitted, the function defaults to 'aitchison', unless there are
 #' zeros present in the data.
+#' @param colmap an optional string with the name of one of R's
+#' built-in colour palettes (e.g., heat.colors, terrain.colors,
+#' topo.colors, cm.colors), which are to be used for plotting the data.
 #' @return an object of class \code{HMdata}, i.e. a list with the
 #' following items:
 #' 
@@ -251,15 +258,16 @@ read.DZdata <- function(datafile,errorfile=NULL,metric="KS",xlabel="age [Ma]") {
 #' Major <- read.HMdata(fname)
 #' plot(getPCA(Major))
 #' @export
-read.HMdata <- function(fname,metric=NULL) {
+read.HMdata <- function(fname,metric=NULL,colmap='rainbow') {
     out <- list()
     class(out) <- "HMdata"
-    out$x <- read.csv(fname,header=TRUE,row.names=1)
+    out$x <- utils::read.csv(fname,header=TRUE,row.names=1)
     if (is.null(metric)){
         if (any(out$x==0)) { metric <- "bray" }
         else { metric <- "aitchison" }
     }
     out$metric <- metric
+    out$colmap <- colmap
     if (any(out$x==0) & metric=="aitchison"){
         stop(paste("This dataset contains zeros and is",
                    "incompatible with the 'aitchison' distance"))
@@ -282,12 +290,12 @@ read.HMdata <- function(fname,metric=NULL) {
 #' @export
 KS.dist <- function(x,y) {
     xx = sort(x)
-    cdftmp = ecdf(xx)
+    cdftmp = stats::ecdf(xx)
     cdf1 = cdftmp(xx)
     xy = sort(y)
-    cdftmp = ecdf(xy)
+    cdftmp = stats::ecdf(xy)
     cdfEstim = cdftmp(xy)
-    cdfRef = approx(xx, cdf1, xy, yleft = 0, yright = 1, ties = "mean")
+    cdfRef = stats::approx(xx, cdf1, xy, yleft = 0, yright = 1, ties = "mean")
     dif = cdfRef$y - cdfEstim
     dif = abs(dif)
     out = max(dif)
@@ -334,7 +342,7 @@ dist.DZdata <- function(x,metric=NULL,...) {
             }
         }
     }
-    return (as.dist(diss))
+    return (stats::as.dist(diss))
 }
 #' @rdname dist
 #' @export
@@ -357,8 +365,8 @@ plotlines <- function(conf,diss) {
     x2 = as.vector(conf[i[,2],1]) # calculate (x,y)-coordinates ...
     y2 = as.vector(conf[i[,2],2]) # ... of second nearest neighbours
     for (j in 1:nrow(conf)) {
-        lines(c(conf[j,1],x1[j]),c(conf[j,2],y1[j]),lty=1) # solid line
-        lines(c(conf[j,1],x2[j]),c(conf[j,2],y2[j]),lty=2) # dashed line
+        graphics::lines(c(conf[j,1],x1[j]),c(conf[j,2],y1[j]),lty=1) # solid line
+        graphics::lines(c(conf[j,1],x2[j]),c(conf[j,2],y2[j]),lty=2) # dashed line
     }
 }
 
@@ -380,21 +388,21 @@ plotlines <- function(conf,diss) {
 #' @method plot MDS
 #' @export
 plot.MDS <- function(x,nnlines=FALSE,pch=NA,cex=NA,xlab="",ylab="",xaxt='n',yaxt='n',...){
-    plot(x$points, type="n", asp=1, xlab=xlab, ylab=ylab,xaxt=xaxt,yaxt=yaxt,...)
+    graphics::plot(x$points, type="n", asp=1, xlab=xlab, ylab=ylab,xaxt=xaxt,yaxt=yaxt,...)
     # draw lines between closest neighbours
     if (nnlines) {
         if (is.na(pch)) pch=21
         if (is.na(cex)) cex=2.5
         plotlines(x$points,x$diss)
     }
-    points(x$points, pch=pch, cex=cex, col='red', bg='white')
-    text(x$points, labels = labels(x$diss))
+    graphics::points(x$points, pch=pch, cex=cex, col='red', bg='white')
+    graphics::text(x$points, labels = labels(x$diss))
     if (!x$classical){
-        dev.new()
+        grDevices::dev.new()
         shep <- MASS::Shepard(x$diss, x$points)
-        plot(shep, pch=".")
-        lines(shep$x, shep$yf, type="S")
-        title(paste0("Stress = ",x$stress))
+        graphics::plot(shep, pch=".")
+        graphics::lines(shep$x, shep$yf, type="S")
+        graphics::title(paste0("Stress = ",x$stress))
     }
 }
 
@@ -443,7 +451,7 @@ getMDS.DZdata <- function(x,classical=FALSE,...){
 getMDS.dist <- function(x,classical=FALSE,...){
     out <- list() 
     if (classical){
-        out$points <- cmdscale(x)
+        out$points <- stats::cmdscale(x)
     } else {
         out <- MASS::isoMDS(d=x,...)
     }
@@ -496,7 +504,7 @@ clr.HMdata <- function(x,...){
 #' @export
 getPCA <- function(x,...){
     clrdat <- clr(x)
-    pc <- princomp(clrdat$x,...)
+    pc <- stats::princomp(clrdat$x,...)
     class(pc) <- append("PCA",class(pc))
     return(pc)
 }
@@ -513,7 +521,7 @@ getPCA <- function(x,...){
 #' @method plot PCA
 #' @export
 plot.PCA <- function(x,...){
-    biplot(x,...)
+    stats::biplot(x,...)
 }
 
 #' Get a subset of a provenance dataset
@@ -628,8 +636,8 @@ procrustes <- function(...) {
 #' @method plot GPA
 #' @export
 plot.GPA <- function(x,...){
-    plot(x$points[,1],x$points[,2],type="n",asp=1,...)
-    text(x$points[,1],x$points[,2],x$labels)
+    graphics::plot(x$points[,1],x$points[,2],type="n",asp=1,...)
+    graphics::text(x$points[,1],x$points[,2],x$labels)
 }
 
 #' Individual Differences Scaling of provenance data
@@ -709,17 +717,17 @@ indscal <- function(...,type='ordinal'){
 #' @export
 plot.INDSCAL <- function(x,asp=1,xlab="",ylab="",
                          xaxt='n',yaxt='n',...){
-    par(mar=c(1,1,1,1))
+    graphics::par(mar=c(1,1,1,1))
     graphics::plot(x$gspace,type="n",asp=asp,xlab=xlab,
          ylab=ylab,xaxt=xaxt,yaxt=yaxt,...)
-    text(x$gspace,labels=labels(x$obsdiss[[1]]))
-    title('Group Configuration')
+    graphics::text(x$gspace,labels=rownames(x$gspace))
+    graphics::title('Group Configuration')
     X <- unlist(lapply(x$cweights,function(foo) foo[1,1]))
     Y <- unlist(lapply(x$cweights,function(foo) foo[2,2]))
-    dev.new()
+    grDevices::dev.new()
     graphics::plot(X,Y,type="n",asp=1,...)
-    text(X,Y,names(x$cweights))
-    title('Source Weights')
+    graphics::text(X,Y,names(x$cweights))
+    graphics::title('Source Weights')
 }
 
 # Abramson
@@ -737,7 +745,7 @@ pilotdensity <- function(dat,bw){
     n <- length(dat)
     dens <- rep(0,n)
     for (i in 1:n){
-        dens[i] <- mean(density(dat,bw,from=(dat[i]-1e-10),
+        dens[i] <- mean(stats::density(dat,bw,from=(dat[i]-1e-10),
                                 to=(dat[i]+1e-10),n=2)$y)
     }
     return(dens)
@@ -752,7 +760,7 @@ Abramson <- function(dat,from,to,bw){
     dens <- rep(0,512)
     for (i in 1:n){
         lambda = sqrt(G/pdens[i])
-        dens <- dens + density(dat[i],bw*lambda,from=from,to=to)$y
+        dens <- dens + stats::density(dat[i],bw*lambda,from=from,to=to)$y
     }
     return(dens)
 }
@@ -812,7 +820,7 @@ getKDE <- function(x,from=NA,to=NA,bw=NA,adaptive=TRUE,log=FALSE){
         d <- log10(x)
         from <- log10(from)
         to <- log10(to)
-        bw <- bw/(median(x)*log(10))
+        bw <- bw/(stats::median(x)*log(10))
     } else {
         d <- x
     }
@@ -821,7 +829,7 @@ getKDE <- function(x,from=NA,to=NA,bw=NA,adaptive=TRUE,log=FALSE){
     if (adaptive){
         out$y <- Abramson(d,from,to,bw)
     } else {
-        out$y <- density(d,bw,from=from,to=to)$y
+        out$y <- stats::density(d,bw,from=from,to=to)$y
     }
     if (log) out$x <- 10^(out$x)
     out$y <- out$y/(sum(out$y)*(to-from)/512)
@@ -888,7 +896,7 @@ getKDEs <- function(x,from=NA,to=NA,bw=NA,samebandwidth=TRUE,
 }
 
 emptyplot <- function(){
-    plot(c(0,1),c(0,1),type='n',axes=FALSE,xlab="",ylab="")
+    graphics::plot(c(0,1),c(0,1),type='n',axes=FALSE,xlab="",ylab="")
 }
 
 #' @export
@@ -923,12 +931,12 @@ names.KDEs <- function(x){
 #' @export
 plot.KDE <- function(x,pch='|',xlab="age [Ma]",ylab="",...){
     if (x$log) {
-        plot(x$x,x$y,type='l',log="x",xlab=xlab,ylab=ylab,...)
+        graphics::plot(x$x,x$y,type='l',log="x",xlab=xlab,ylab=ylab,...)
     } else {
-        plot(x$x,x$y,type='l',xlab=xlab,ylab=ylab,...)
+        graphics::plot(x$x,x$y,type='l',xlab=xlab,ylab=ylab,...)
     }
-    points(x$ages,rep(par("usr")[3]/2,length(x$ages)),pch=pch)
-    text(tail(x$x,n=1),.9*max(x$y),paste0("n=",length(x$ages)),pos=2)
+    graphics::points(x$ages,rep(graphics::par("usr")[3]/2,length(x$ages)),pch=pch)
+    graphics::text(utils::tail(x$x,n=1),.9*max(x$y),paste0("n=",length(x$ages)),pos=2)
 }
 
 # Plot multiple KDEs. Used by summaryplot function
@@ -939,10 +947,10 @@ plot.KDEs <- function(x,sname,annotate=TRUE,...){
         M <- max(x$kdes[[sname]]$y)
     }
     if (annotate){
-        plot(x$kdes[[sname]],pch=NA,...)
+        graphics::plot(x$kdes[[sname]],pch=NA,...)
     } else {
-        plot(x$kdes[[sname]],pch=x$pch,
-             axes=FALSE,xlab="",ylab="",...)
+        graphics::plot(x$kdes[[sname]],pch=x$pch,
+                       axes=FALSE,xlab="",ylab="",...)
     }
 }
 
@@ -964,35 +972,39 @@ plot.KDEs <- function(x,sname,annotate=TRUE,...){
 #' the CAD
 #' @param verticals boolean flag indicating if the horizontal lines of
 #' the CAD should be connected by vertical lines
-#' @param col a colour map
+#' @param colmap an optional string with the name of one of R's
+#' built-in colour palettes (e.g., heat.colors, terrain.colors,
+#' topo.colors, cm.colors), which are to be used for plotting the data.
 #' @param ... optional arguments to the generic \code{plot} function
 #' @examples
 #' DZ <- read.DZdata(system.file("DZ.csv",package="provenance"))
-#' plot(DZ,c('N1','N2'),CAD=TRUE)
+#' plot(DZ,c('N1','N2'))
 #' @method plot DZdata
 #' @export
 plot.DZdata <- function(x,snames=NULL,annotate=TRUE,CAD=FALSE,
-                        pch=NA,verticals=TRUE,col=par("col"),...){
+                       pch=NA,verticals=TRUE,colmap=NULL,...){
     if (is.null(snames)) snames <- names(x)
-    if (length(snames)>1){
-        n <- length(snames)
-        if (col==par("col")) col <- heat.colors(n)
-        plot(ecdf(x$x[[snames[1]]]),pch=pch,verticals=verticals,
+    if (is.null(colmap)) { colmap <- x$colmap }
+    n <- length(snames)
+    col <- do.call(colmap,list(n))
+    if (n>1){
+        graphics::plot(stats::ecdf(x$x[[snames[1]]]),pch=pch,verticals=verticals,
              col=col[1],xlab=x$xlabel,main="",...)
         for (i in 2:n){
-            lines(ecdf(x$x[[snames[i]]]),pch=pch,verticals=verticals,
+            graphics::lines(stats::ecdf(x$x[[snames[i]]]),pch=pch,verticals=verticals,
                   col=col[i],xlab=x$xlabel,main="",...)
         }
-        legend("bottomright",legend=snames,lwd=1,col=col)
+        graphics::legend("bottomright",legend=snames,lwd=1,col=col)
     } else {
         if (annotate){
-            if (CAD) { plot(ecdf(x$x[[snames]]),pch=pch,
-                            verticals=verticals,col=col,main=snames,...) }
-            else { hist(x$x[[snames]],x$breaks,col=col) }
+            if (CAD) { graphics::plot(stats::ecdf(x$x[[snames]]),pch=pch,
+                       verticals=verticals,col=col,main=snames,...) }
+            else { graphics::hist(x$x[[snames]],x$breaks,col=col) }
         } else {
-            if (CAD) { plot(ecdf(x$x[[snames]]),pch=pch,verticals=verticals,
-                        axes=FALSE,xlab="",ylab="",main="",col=col,...)
-            } else {hist(x$x[[snames]],x$breaks, axes=FALSE,xlab="",ylab="",main="",col=col) }
+            if (CAD) { graphics::plot(stats::ecdf(x$x[[snames]]),pch=pch,verticals=verticals,
+                       axes=FALSE,xlab="",ylab="",main="",col=col,...)
+            } else { graphics::hist(x$x[[snames]],x$breaks, axes=FALSE,
+                                    xlab="",ylab="",main="",col=col) }
         }
     }
 }
@@ -1004,51 +1016,53 @@ plot.DZdata <- function(x,snames=NULL,annotate=TRUE,CAD=FALSE,
 #' @param sname the sample name
 #' @param annotate a boolean flag controlling if the pies of the
 #' pie-chart should be labeled
-#' @param col colour scheme to fill the pie charts
+#' @param colmap an optional string with the name of one of R's
+#' built-in colour palettes (e.g., heat.colors, terrain.colors,
+#' topo.colors, cm.colors), which are to be used for plotting the data.
 #' @param ... optional parameters to be passed on to the graphics object
 #' @examples
 #' fname <- system.file("HM.csv",package="provenance")
 #' HM <- read.HMdata(fname)
-#' plot(HM,'N1')
+#' plot(HM,'N1',colmap='heat.colors')
 #' @method plot HMdata
 #' @export
-plot.HMdata <- function(x,sname,annotate=TRUE,col='default',...){
+plot.HMdata <- function(x,sname,annotate=TRUE,colmap=NULL,...){
     i <- which(names(x) %in% sname)
-    if (col=='default') col <- heat.colors(length(colnames(x$x)))
-    pos <- x$x[i,]>0
+    if (is.null(colmap)){ colmap <- x$colmap }
+    col <- do.call(colmap,list(length(colnames(x$x))))
     if (annotate){
-        pie(unlist(x$x[i,]),col=col,...)
+        graphics::pie(unlist(x$x[i,]),col=col,...)
     } else {
-        pie(unlist(x$x[i,]),labels=NA,col=col,...)
+        graphics::pie(unlist(x$x[i,]),labels=NA,col=col,...)
     }
 }
 
 # annotation of various plots used in summaryplot function
 annotation <- function(x,...){ UseMethod("annotation",x) }
 annotation.default <- function(x,...){stop()}
-annotation.KDEs <- function(x,height=NA,...){
-    if (is.na(height)){ par(mar=c(2,0,0,0)) }
-    else { par(mai=c(height/2,0,0,0)) }
-    plot(c(x$from,x$to),c(0,1),type='n',axes=FALSE,xlab="",ylab="")
-    Axis(side=1)
-    text(x=.5*(x$from+x$to),.5,label=x$xlabel)
-    par(mar=c(0,0,0,0))
+annotation.KDEs <- function(x,height=NULL,...){
+    if (is.null(height)){ graphics::par(mar=c(2,0,0,0)) }
+    else { graphics::par(mai=c(height/2,0,0,0)) }
+    graphics::plot(c(x$from,x$to),c(0,1),type='n',axes=FALSE,xlab="",ylab="",...)
+    graphics::Axis(side=1)
+    graphics::text(x=.5*(x$from+x$to),.5,label=x$xlabel)
+    graphics::par(mar=c(0,0,0,0))
 }
-annotation.HMdata <- function(x,...){
+annotation.HMdata <- function(x,height=NULL,...){
     labels <- colnames(x$x)
     comp <- rep(1,length(labels))
-    pie(comp,labels=labels,col=heat.colors(length(labels)))
+    col <- do.call(x$colmap,list(length(labels)))
+    graphics::pie(comp,labels=labels,col=col,...)
 }
-annotation.DZdata <- function(x,height=NA,...){
-    if (is.na(height)){ par(mar=c(2,0,0,0)) }
-    else { par(mai=c(height/2,0,0,0)) }
+annotation.DZdata <- function(x,height=NULL,...){
+    if (is.null(height)){ graphics::par(mar=c(2,0,0,0)) }
+    else { graphics::par(mai=c(height/2,0,0,0)) }
     m <- min(x$breaks)
     M <- max(x$breaks)
-    plot(c(m,M),c(0,1),
-         type='n',axes=FALSE,xlab="",ylab="")
-    Axis(side=1)
-    text(x=.5*(m+M),.5,label=x$xlabel)
-    par(mar=c(0,0,0,0))
+    graphics::plot(c(m,M),c(0,1),type='n',axes=FALSE,xlab="",ylab="",...)
+    graphics::Axis(side=1)
+    graphics::text(x=.5*(m+M),.5,label=x$xlabel)
+    graphics::par(mar=c(0,0,0,0))
 }
 
 #' Joint plot of several provenance datasets
@@ -1081,14 +1095,14 @@ summaryplot <- function(...,ncol=1){
     w <- rep(c(1,w),ncol)
     nppc <- ceiling(ns/ncol)
     np <- (nppc+1)*ncol*(nd+1) # number of subpanels
-    layout(matrix(1:np,nppc+1,length(w)),w,rep(1,nppc+1))
+    graphics::layout(matrix(1:np,nppc+1,length(w)),w,rep(1,nppc+1))
     si <- ceiling(seq(from=0,to=ns,length.out=ncol+1)) # sample index
-    par(xpd=TRUE,mar=c(0,0,0,0))
+    graphics::par(xpd=TRUE,mar=c(0,0,0,0))
     for (i in 1:ncol){ # loop through columns
         for (j in (si[i]+1):(si[i+1])){
             sname <- snames[j]
             emptyplot()
-            text(0,0.5,labels=sname,pos=4)
+            graphics::text(0,0.5,labels=sname,pos=4)
         }
         if (si[i+1]-si[i]<nppc) emptyplot()
         emptyplot()
@@ -1096,14 +1110,14 @@ summaryplot <- function(...,ncol=1){
             for (j in (si[i]+1):si[i+1]){
                 sname <- snames[j]
                 if (sname %in% names(d)){
-                    plot(d,sname,annotate=FALSE)
+                    graphics::plot(d,sname,annotate=FALSE)
                 } else {
                     emptyplot()
                 }
             }
             if (si[i+1]-si[i]<nppc) emptyplot()
             if (i==ncol){
-                ds <- dev.size()[2]/(nppc+1)
+                ds <- grDevices::dev.size()[2]/(nppc+1)
                 annotation(d,height=ds)
             } else {
                 emptyplot()
@@ -1119,23 +1133,24 @@ lines.ternary <- function(type='empty'){
         xy3 <- xyz2xy(c(0,75),c(25,25/4),c(75,25*3/4))
         xy4 <- xyz2xy(c(0,75),c(75,25*3/4),c(25,25/4))
         xy5 <- xyz2xy(c(0,90),c(50,5),c(50,5))
-        lines(xy1); lines(xy2); lines(xy3); lines(xy4); lines(xy5)
-        text(xyz2xy(20,-1,2),labels='quartarenite',adj=0)
-        text(xyz2xy(40,-2,10),labels='sublitharenite',adj=0)
-        text(xyz2xy(40,10,-2),labels='subarkose',adj=1)
-        text(xyz2xy(30,70,10),labels='arkose',srt=68)
-        text(xyz2xy(30,50,30),labels='lithic arkose',srt=85)
-        text(xyz2xy(30,30,50),labels='feldspathic litharenite',srt=-85)
-        text(xyz2xy(30,10,70),labels='litharenite',srt=-68)
+        graphics::lines(xy1); graphics::lines(xy2);
+        graphics::lines(xy3); graphics::lines(xy4); graphics::lines(xy5)
+        graphics::text(xyz2xy(20,-1,2),labels='quartarenite',adj=0)
+        graphics::text(xyz2xy(40,-2,10),labels='sublitharenite',adj=0)
+        graphics::text(xyz2xy(40,10,-2),labels='subarkose',adj=1)
+        graphics::text(xyz2xy(30,70,10),labels='arkose',srt=68)
+        graphics::text(xyz2xy(30,50,30),labels='lithic arkose',srt=85)
+        graphics::text(xyz2xy(30,30,50),labels='feldspathic litharenite',srt=-85)
+        graphics::text(xyz2xy(30,10,70),labels='litharenite',srt=-68)
         return(c('Q','F','L'))
     }
     if (type=='QFL.dickinson') {
         xy1 <- xyz2xy(c(97,0),c(0,85),c(3,15))
         xy2 <- xyz2xy(c(25,51.6),c(0,40),c(75,8.4))
-        lines(xy1);lines(xy2)
-        text(xyz2xy(20,40,40),labels='magmatic arc')
-        text(xyz2xy(55,15,30),labels='recycled orogen')
-        text(xyz2xy(50,45,5),labels='continental block',srt=65)
+        graphics::lines(xy1); graphics::lines(xy2)
+        graphics::text(xyz2xy(20,40,40),labels='magmatic arc')
+        graphics::text(xyz2xy(55,15,30),labels='recycled orogen')
+        graphics::text(xyz2xy(50,45,5),labels='continental block',srt=65)
         return(c('Q','F','L'))
     }
 }
@@ -1160,12 +1175,12 @@ lines.ternary <- function(type='empty'){
 #' ternaryplot(q,f,l,type='QFL.dickinson',labels=names(PT))
 #' @export
 ternaryplot <- function(x,y,z,type='empty',pch=NA,labels=names(x),...){
-    par(mar=c(1,1,1,1))
-    plot(c(0,1),c(0,1),type='n',xaxt='n',yaxt='n',
-         xlab='',ylab='',asp=1,bty='n')
+    graphics::par(mar=c(1,1,1,1))
+    graphics::plot(c(0,1),c(0,1),type='n',xaxt='n',yaxt='n',
+                   xlab='',ylab='',asp=1,bty='n')
     xyzlabels <- lines.ternary(type=type)
     corners <- xyz2xy(c(1,0,0,1),c(0,1,0,0),c(0,0,1,0))
-    lines(corners)
+    graphics::lines(corners)
     if (any(is.na(xyzlabels))){
         xlab <- deparse(substitute(x))
         ylab <- deparse(substitute(y))
@@ -1175,11 +1190,11 @@ ternaryplot <- function(x,y,z,type='empty',pch=NA,labels=names(x),...){
         ylab <- xyzlabels[2]
         zlab <- xyzlabels[3]
     }
-    text(corners[1:3,],labels=c(xlab,ylab,zlab),pos=c(3,1,1))
+    graphics::text(corners[1:3,],labels=c(xlab,ylab,zlab),pos=c(3,1,1))
     xy <- xyz2xy(x,y,z)
     if (is.na(pch) & is.null(labels)){ pch <- 1 }
-    if (!is.na(pch)) points(xy,pch=pch,...)
-    if (!is.null(labels)){ text(xy,labels=labels,pos=1) }
+    if (!is.na(pch)) graphics::points(xy,pch=pch,...)
+    if (!is.null(labels)){ graphics::text(xy,labels=labels,pos=1) }
 }
 
 xyz2xy <- function(x,y,z){
@@ -1270,16 +1285,32 @@ get.f <- function(n,p=0.05){
 }
 
 test <- function(){
+
+    options(warn=2)
+    
+#    setwd("/home/pvermees/Desktop/Nie")
+#    DZ <- read.DZdata("DZ.csv")
+#    HM <- read.HMdata("HM.csv")
+#    PT <- read.HMdata("PT.csv")
+    
     setwd("/home/pvermees/Dropbox/provenance/provenance")
-    graphics.off()
+    grDevices::graphics.off()
 
     DZ <- read.DZdata("./inst/DZ.csv","./inst/DZerr.csv")
     DZerr <- read.DZdata("./inst/DZerr.csv","./inst/DZerr.csv")
     HM <- read.HMdata("./inst/HM.csv")
-    PT <- read.HMdata("./inst/PT.csv")
+    PT <- read.HMdata("./inst/PT.csv",colmap='cm.colors')
     Major <- read.HMdata("./inst/Major.csv")
     Trace <- read.HMdata("./inst/Trace.csv")
 
+    graphics::plot(DZ,c('N1','N2'),colmap='heat.colors')
+
+#    KDEs <- getKDEs(DZ,from=0,to=3000)
+#    summaryplot(KDEs,HM,PT,ncol=3)
+#    saveplot('foo.pdf',2)
+
+#    plot(indscal(DZ,HM))
+    
 }
 
 #test()
