@@ -7,8 +7,8 @@
 procrustes(...)
 }
 \arguments{
-\item{...}{a sequence of datasets of classes \code{DZdata}
-and \code{HMdata}}
+\item{...}{a sequence of datasets of classes \code{distributional}
+and \code{compositional}}
 }
 \value{
 an object of class \code{GPA}, i.e. a list containing the
@@ -27,9 +27,8 @@ to find a 'consensus' configuration which best matches all the
 component configurations in a least-squares sense.
 }
 \examples{
-DZ <- read.DZdata(system.file("DZ.csv",package="provenance"))
-HM <- read.HMdata(system.file("HM.csv",package="provenance"))
-GPA <- procrustes(DZ,HM)
+data(Namib)
+GPA <- procrustes(Namib$DZ,Namib$HM)
 plot(GPA)
 }
 \author{

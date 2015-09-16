@@ -7,8 +7,8 @@
 indscal(..., type = "ordinal")
 }
 \arguments{
-\item{...}{a sequence of datasets of class \code{DZdata} or
-\code{HMdata}}
+\item{...}{a sequence of datasets of class \code{distributional} or
+\code{compositional}}
 
 \item{type}{is either "ratio", "interval", or "ordinal"}
 }
@@ -48,9 +48,8 @@ Chang (1970)'s INdividual Differences SCALing method as implemented
 using De Leeuw and Mair (2011)'s stress majorization algorithm.
 }
 \examples{
-DZ <- read.DZdata(system.file("DZ.csv",package="provenance"))
-HM <- read.HMdata(system.file("HM.csv",package="provenance"))
-plot(indscal(DZ,HM))
+data(Namib)
+plot(indscal(Namib$DZ,Namib$HM))
 }
 \author{
 Jan de Leeuw and Patrick Mair

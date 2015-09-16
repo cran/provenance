@@ -2,15 +2,15 @@
 % Please edit documentation in R/provenance.R
 \name{clr}
 \alias{clr}
-\alias{clr.HMdata}
+\alias{clr.compositional}
 \title{Centred logratio transformation}
 \usage{
 clr(x, ...)
 
-\method{clr}{HMdata}(x, ...)
+\method{clr}{compositional}(x, ...)
 }
 \arguments{
-\item{x}{an object of class \code{HMdata}}
+\item{x}{an object of class \code{compositional}}
 
 \item{...}{optional arguments of the generic function}
 }
@@ -19,13 +19,16 @@ a matrix of clr coordinates
 }
 \description{
 Calculates Aitchison's centered logratio transformation for a
-dataset of class \code{HMdata}
+dataset of class \code{compositional}
 }
 \examples{
-fname <- system.file("Major.csv",package="provenance")
-Major <- read.HMdata(fname)
-clrdat <- clr(Major)$x
-diss <- dist(clrdat)
-plot(getMDS(diss,classical=TRUE))
+# The following code shows that applying provenance's PCA function
+# to compositional data is equivalent to applying R's built-in
+# princomp function to the clr transformed data.
+data(Namib)
+plot(PCA(Namib$Major))
+dev.new()
+clrdat <- clr(Namib$Major)$x
+biplot(princomp(clrdat))
 }
 

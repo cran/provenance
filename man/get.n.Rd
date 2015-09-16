@@ -14,6 +14,10 @@ at least one fraction of size f}
 
 \item{n,}{the number of grains in the sample}
 }
+\value{
+the number of grains needed to reduce the chance of missing
+at least one fraction f of the total population to less than p
+}
 \description{
 Returns the number of grains that need to be analysed to decrease
 the likelihood of missing any fraction greater than a given size
