@@ -2,7 +2,7 @@
 % Please edit documentation in R/provenance.R
 \name{subset.distributional}
 \alias{subset.distributional}
-\title{Get a subset of a distributional dataset}
+\title{Get a subset of distributional data}
 \usage{
 \method{subset}{distributional}(x, subset = NULL, select = NULL, ...)
 }

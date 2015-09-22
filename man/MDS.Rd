@@ -43,6 +43,12 @@ achieved (in percent)
 }
 \description{
 Performs classical or nonmetric Multidimensional Scaling analysis
+
+Multidimensional Scaling of compositional data
+
+Multidimensional Scaling of distributional data
+
+Multidimensional Scaling of a dissimilarity matrix
 }
 \examples{
 data(Namib)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/provenance.R
 \name{subset.compositional}
 \alias{subset.compositional}
-\title{Get a subset of a compositional dataset}
+\title{Get a subset of compositional data}
 \usage{
 \method{subset}{compositional}(x, subset = NULL, select = NULL,
   components = NULL, ...)

@@ -4,7 +4,7 @@
 \alias{plot.INDSCAL}
 \title{Plot an INDSCAL group configuration and source weights}
 \usage{
-\method{plot}{INDSCAL}(x, asp = 1, xlab = "", ylab = "", xaxt = "n",
+\method{plot}{INDSCAL}(x, asp = 1, xlab = "X", ylab = "Y", xaxt = "n",
   yaxt = "n", ...)
 }
 \arguments{

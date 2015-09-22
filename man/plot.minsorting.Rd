@@ -4,7 +4,7 @@
 \alias{plot.minsorting}
 \title{Plot inferred grain size distributions}
 \usage{
-\method{plot}{minsorting}(x, cumulative = FALSE, ...)
+\method{plot}{minsorting}(x, cumulative = FALSE, components = NULL, ...)
 }
 \arguments{
 \item{x}{an object of class \code{minsorting}}
@@ -13,6 +13,9 @@
 distribution should be plotted as a density or cumulative
 probability curve.}
 
+\item{components}{string or list of strings with the names of a
+subcomposition that needs plotting}
+
 \item{...}{optional parameters (see ?par for details)}
 }
 \description{
@@ -20,10 +23,10 @@ Plot the grain size distributions of the different
 minerals under consideration
 }
 \examples{
-data(Namib,densities)
-N8 <- subset(Namib$HM,select="N8")
-distribution <- minsorting(N8,densities,phi=2,sigmaphi=1,medium="air",by=0.05)
-plot(distribution)
+data(endmembers,densities)
+OPH <- subset(endmembers,select="ophiolite")
+distribution <- minsorting(OPH,densities,phi=2,sigmaphi=1,medium="air",by=0.05)
+plot(distribution,components=c('F','px','opaques'))
 }
 \seealso{
 minsorting

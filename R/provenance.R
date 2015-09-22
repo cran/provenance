@@ -123,6 +123,113 @@ read.densities <- function(fname){
     return(utils::read.csv(fname,header=TRUE))
 }
 
+#' create a \code{data.frame} object
+#'
+#' Convert an object of class \code{compositional} to a
+#' \code{data.frame} for use in the \code{robCompositions} package
+#'
+#' @param x an object of class \code{compositional}
+#' @param ... optional arguments to be passed on to the generic function
+#' @return a \code{data.frame}
+#' @examples
+#' data(Namib)
+#' qfl <- ternary(Namib$PT,c('Q'),c('KF','P'),c('Lm','Lv','Ls'))
+#' plot(qfl,type="QFL.dickinson")
+#' qfl.frame <- as.data.frame(qfl)
+#' ## uncomment the next two lines to plot an error
+#' ## ellipse using the robCompositions package:
+#' # library(robCompositions)
+#' # pca <- pcaCoDa(qfl.frame)
+#' # plot(pca,xlabs=rownames(qfl.frame))
+#' @export
+as.data.frame.compositional <- function(x,...){
+    nc <- ncol(as.matrix(x$x))
+    if (nc==3) out <- data.frame(x$x[,c(2,3,1)],...)
+    if (nc>3) out <- data.frame(x$x[,c(2,3,1,4:nc)],...)
+    if (nc<3) out <- data.frame(x$x,...)
+    return(out)
+}
+
+#' create an \code{acomp} object
+#'
+#' Convert an object of class \code{compositional} to an object of
+#' class \code{acomp} for use in the \code{compositions} package
+#'
+#' @param x an object of class \code{compositional}
+#' @return a \code{data.frame}
+#' @examples
+#' data(Namib)
+#' qfl <- ternary(Namib$PT,c('Q'),c('KF','P'),c('Lm','Lv','Ls'))
+#' plot(qfl,type="QFL.dickinson")
+#' qfl.acomp <- as.acomp(qfl)
+#' ## uncomment the next two lines to plot an error
+#' ## ellipse using the compositions package: 
+#' # library(compositions)
+#' # ellipses(mean(qfl.acomp),var(qfl.acomp),r=2)
+#' @export
+as.acomp <- function(x){
+    if (!methods::is(x,"compositional")){
+        stop("not an object of class compositional or ternary")
+    }
+    dat <- as.matrix(as.data.frame(x))
+    out <- structure(dat)
+    attributes(out) <- list(dim = dim(dat), dimnames=dimnames(dat), class="acomp")
+    return(out)
+}
+
+as.compositional.matrix <- function(x,method=NULL,colmap='rainbow'){
+    out <- list(x=NULL,method=method,colmap=colmap)
+    class(out) <- "compositional"
+    out$x <- as.matrix(x)
+    nc <- ncol(out$x)
+    if (nc==3) out$x <- out$x[,c(3,1,2)]
+    if (nc>3) out$x <- out$x[,c(3,1,2,4:nc)]
+    if (nc<3) out$x <- out$x
+    return(out)
+}
+
+#' create a \code{compositional} object
+#'
+#' Convert an object of class \code{matrix}, \code{data.fram} or
+#' \code{acomp} to an object of class \code{compositional}
+#'
+#' @param x an object of class \code{matrix}, \code{data.fram} or
+#' \code{acomp}
+#' @param method dissimilarity measure, either 'aitchison' for
+#' Aitchison's CLR-distance or 'bray' for the Bray-Curtis distance.
+#' @param colmap the colour map to be used in pie charts.
+#' @return an object of class \code{compositional}
+#' @examples
+#' data(Namib)
+#' PT.acomp <- as.acomp(Namib$PT)
+#' PT.compositional <- as.compositional(PT.acomp)
+#' print(Namib$PT$x - PT.compositional$x)
+#' ## uncomment the following lines for an illustration of using this 
+#' ## function to integrate the \code{provenance} package with \code{compositions}
+#' # library(compositions)
+#' # data(Glacial)
+#' # a.glac <- acomp(Glacial)
+#' # c.glac <- as.compositional(a.glac)
+#' # summaryplot(c.glac,ncol=8)
+#' @export
+as.compositional <- function(x,method=NULL,colmap='rainbow'){
+    if (methods::is(x,"acomp")){
+        attr <- attributes(x)
+        attributes(x) <- NULL
+        x[!is.numeric(x)] <- NA
+        y <- matrix(x,nrow=attr$dim[[1]],ncol=attr$dim[[2]],dimnames=attr$dimnames)
+        print(print(attr$dim[[1]]))
+        return(as.compositional.matrix(y))
+    } else if (methods::is(x,"data.frame") | methods::is(x,"matrix")){
+        y <- as.matrix(x)
+        dimnames(y) <- dimnames(x)
+        return(as.compositional.matrix(y,method,colmap))
+    } else {
+        stop(paste("cannot convert an object of class",class(x),
+                   "into an object of class compositional"))
+    }
+}
+
 #' Kolmogorov-Smirnov dissimilarity
 #'
 #' Returns the Kolmogorov-Smirnov dissimilarity between two samples
@@ -193,7 +300,7 @@ diss.distributional <- function(x,method=NULL) {
 diss.compositional <- function(x,method=NULL){
     if (!is.null(method)) x$method <- method
     if (x$method=="aitchison"){
-        out <- stats::dist(clr(x)$x)
+        out <- stats::dist(CLR(x)$x)
     } else {
         snames <- names(x)
         ns <- length(snames)
@@ -252,20 +359,27 @@ bray.diss <- function(x,y){
 #' data(Namib)
 #' plot(MDS(Namib$Major,classical=TRUE))
 #' @rdname MDS
+#' @importFrom MASS isoMDS
 #' @export
 MDS <- function(x,...){ UseMethod("MDS",x) }
+#' Multidimensional Scaling of compositional data
+#'
 #' @rdname MDS
 #' @export
 MDS.compositional <- function(x,classical=FALSE,...){
     d <- diss.compositional(x,...)
     return(MDS.diss(d,classical=classical))
 }
+#' Multidimensional Scaling of distributional data
+#'
 #' @rdname MDS
 #' @export
 MDS.distributional <- function(x,classical=FALSE,...){
     d <- diss.distributional(x,...)
     return(MDS.diss(d,classical=classical))
 }
+#' Multidimensional Scaling of a dissimilarity matrix
+#'
 #' @rdname MDS
 #' @export
 MDS.diss <- function(x,classical=FALSE,...){
@@ -286,23 +400,19 @@ MDS.diss <- function(x,classical=FALSE,...){
 #' Calculates Aitchison's centered logratio transformation for a
 #' dataset of class \code{compositional}
 #' @param x an object of class \code{compositional}
-#' @param ... optional arguments of the generic function
-#' @return a matrix of clr coordinates
+#' @return a matrix of CLR coordinates
 #' @examples
 #' # The following code shows that applying provenance's PCA function
 #' # to compositional data is equivalent to applying R's built-in
-#' # princomp function to the clr transformed data.
+#' # princomp function to the CLR transformed data.
 #' data(Namib)
 #' plot(PCA(Namib$Major))
 #' dev.new()
-#' clrdat <- clr(Namib$Major)$x
+#' clrdat <- CLR(Namib$Major)$x
 #' biplot(princomp(clrdat))
 #' @export
-clr <- function(x,...){ UseMethod("clr",x) }
-clr.default <- function(x,...){stop()}
-#' @rdname clr
-#' @export
-clr.compositional <- function(x,...){
+CLR <- function(x){
+    if (!methods::is(x,'compositional')){stop('CLR(x): x is not of class compositional.')}
     out <- x
     g <- apply(log(x$x),1,mean)
     nc <- ncol(x$x)
@@ -326,13 +436,14 @@ clr.compositional <- function(x,...){
 #' print("This example demonstrates the equivalence of classical MDS and PCA")
 #' @export
 PCA <- function(x,...){
-    clrdat <- clr(x)
+    if (!methods::is(x,'compositional')){stop('x is not of class compositional in PCA(x)')}
+    clrdat <- CLR(x)
     pc <- stats::princomp(clrdat$x,...)
     class(pc) <- append("PCA",class(pc))
     return(pc)
 }
 
-#' Get a subset of a distributional dataset
+#' Get a subset of distributional data
 #'
 #' Return a subset of provenance data according to some specified indices
 #' @param x an object of class \code{distributional}
@@ -360,7 +471,7 @@ subset.distributional <- function(x,subset=NULL,select=NULL,...){
     out$x <- x$x[i]
     return(out)
 }
-#' Get a subset of a compositional dataset
+#' Get a subset of compositional data
 #'
 #' Return a subset of provenance data according to some specified indices
 #' @param x an object of class \code{compositional}
@@ -436,6 +547,8 @@ getdisslist <- function(slist){
 #' data(Namib)
 #' GPA <- procrustes(Namib$DZ,Namib$HM)
 #' plot(GPA)
+#' @importFrom MASS isoMDS
+#' @importFrom shapes procGPA
 #' @export
 procrustes <- function(...) {
     dnames <- sapply(match.call(expand.dots=TRUE)[-1], deparse)
@@ -502,6 +615,7 @@ procrustes <- function(...) {
 #' @examples
 #' data(Namib)
 #' plot(indscal(Namib$DZ,Namib$HM))
+#' @importFrom smacof smacofIndDiff
 #' @export
 indscal <- function(...,type='ordinal'){
     dnames <- sapply(match.call(expand.dots=TRUE)[-1], deparse)
@@ -547,7 +661,7 @@ names.KDEs <- function(x){
 }
 #' @export
 names.ternary <- function(x){
-    return(rownames(x$xyz))
+    return(rownames(x$x))
 }
 
 #' Calculate the number of grains required to achieve a desired level of sampling resolution
@@ -742,7 +856,7 @@ ternaryclosure <- function(X,x,y,z){
 #' @return an object of class \code{ternary}, i.e. a
 #' list containing:
 #'
-#' xyz: a three column matrix (or vector) of ternary compositions.
+#' x: a three column matrix (or vector) of ternary compositions.
 #'
 #' and (if X is of class \code{SRDcorrected})
 #'
@@ -756,14 +870,14 @@ ternaryclosure <- function(X,x,y,z){
 #' plot(tern,type="QFL")
 #' @export
 ternary <- function(X,x=NULL,y=NULL,z=NULL){
-    if (!methods::is(X,"compositional")) stop("Input does not have class compositional")
+    if (!methods::is(X,"compositional")) stop("X is not of class compositional")
+    out <- list()
+    class(out) <- append("ternary","compositional")
     if (is.null(x)) x <- colnames(X$x)[1]
     if (is.null(y)) y <- colnames(X$x)[2]
     if (is.null(z)) z <- colnames(X$x)[3]
     arg <- deparse(substitute(x))
-    out <- list()
-    out$xyz <- ternaryclosure(X$x,x,y,z)
-    class(out) <- "ternary"
+    out$x <- ternaryclosure(X$x,x,y,z)
     if (methods::is(X,"SRDcorrected")){
         out$restoration <- list()
         snames <- names(X$restoration)

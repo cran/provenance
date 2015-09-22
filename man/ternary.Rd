@@ -21,7 +21,7 @@ component of X is used instead.}
 an object of class \code{ternary}, i.e. a
 list containing:
 
-xyz: a three column matrix (or vector) of ternary compositions.
+x: a three column matrix (or vector) of ternary compositions.
 
 and (if X is of class \code{SRDcorrected})
 

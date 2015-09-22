@@ -275,19 +275,20 @@ summaryplot <- function(...,ncol=1){
 #' @seealso ternary
 #' @method plot ternary
 #' @export
-plot.ternary <- function(x,type='empty',pch=NA,labels=names(x),showpath=FALSE,...){
-    graphics::par(mar=c(1,1,1,1))
+plot.ternary <- function(x,type='empty',pch=NA,labels=names(x),
+                         showpath=FALSE,...){
+    graphics::par(mar=c(2,1,1,1))
     graphics::plot(c(0,1),c(0,1),type='n',xaxt='n',yaxt='n',
-                   xlab='',ylab='',asp=1,bty='n')
+                   xlab='',ylab='',asp=1,bty='n',...)
     if (type=='empty') {
-        cornerlabels <- colnames(x$xyz)
+        cornerlabels <- colnames(x$x)
     } else {
         cornerlabels <- lines.ternary(type=type)
     }
     corners <- xyz2xy(matrix(c(1,0,0,1,0,1,0,0,0,0,1,0),ncol=3))
     graphics::lines(corners)
     graphics::text(corners[1:3,],labels=cornerlabels,pos=c(3,1,1))
-    xy <- xyz2xy(x$xyz)
+    xy <- xyz2xy(x$x)
     if (is.na(pch) & is.null(labels)){ pch <- 1 }
     if (!is.na(pch)) graphics::points(xy,pch=pch,...)
     if (!is.null(labels)){ graphics::text(xy,labels=labels,pos=1) }
@@ -302,17 +303,24 @@ plot.ternary <- function(x,type='empty',pch=NA,labels=names(x),showpath=FALSE,..
 #' @param cumulative boolean flag indicating whether the grain size
 #' distribution should be plotted as a density or cumulative
 #' probability curve.
+#' @param components string or list of strings with the names of a
+#' subcomposition that needs plotting
 #' @param ... optional parameters (see ?par for details)
 #' @examples
-#' data(Namib,densities)
-#' N8 <- subset(Namib$HM,select="N8")
-#' distribution <- minsorting(N8,densities,phi=2,sigmaphi=1,medium="air",by=0.05)
-#' plot(distribution)
+#' data(endmembers,densities)
+#' OPH <- subset(endmembers,select="ophiolite")
+#' distribution <- minsorting(OPH,densities,phi=2,sigmaphi=1,medium="air",by=0.05)
+#' plot(distribution,components=c('F','px','opaques'))
 #' @seealso minsorting
 #' @method plot minsorting
 #' @export
-plot.minsorting <- function(x,cumulative=FALSE,...){
-    plotval <- x$mfract
+plot.minsorting <- function(x,cumulative=FALSE,components=NULL,...){
+    if (is.null(components)){
+        plotval <- x$mfract
+    } else {
+        plotval <- as.matrix(x$mfract[,components])
+        colnames(plotval) <- components
+    }
     gsize <- as.numeric(rownames(plotval)) # grain size fraction
     if (cumulative) plotval <- apply(plotval,2,'cumsum')
     ncat <- ncol(plotval)
@@ -340,9 +348,8 @@ plot.minsorting <- function(x,cumulative=FALSE,...){
 #' @seealso indscal
 #' @method plot INDSCAL
 #' @export
-plot.INDSCAL <- function(x,asp=1,xlab="",ylab="",
+plot.INDSCAL <- function(x,asp=1,xlab="X",ylab="Y",
                          xaxt='n',yaxt='n',...){
-    graphics::par(mar=c(1,1,1,1))
     graphics::plot(x$gspace,type="n",asp=asp,xlab=xlab,
          ylab=ylab,xaxt=xaxt,yaxt=yaxt,...)
     graphics::text(x$gspace,labels=rownames(x$gspace))
@@ -372,7 +379,7 @@ plotlines <- function(conf,diss) {
 
 # annotation of various plots used in summaryplot function
 annotation <- function(x,...){ UseMethod("annotation",x) }
-annotation.default <- function(x,...){stop()}
+annotation.default <- function(x,...){stop('x not of class KDEs, compositional or distributional in annotation(x)')}
 annotation.KDEs <- function(x,height=NULL,...){
     if (is.null(height)){ graphics::par(mar=c(2,0,0,0)) }
     else { graphics::par(mai=c(height/2,0,0,0)) }
@@ -450,10 +457,9 @@ xyz2xy <- function(xyz){
         y <- xyz[2]
         z <- xyz[3]
     }
-    bl <- (1-sin(pi/3))/2 # baseline
     xy <- matrix(0,nrow=n,ncol=2)
     xy[,1] <- 0.5*(x+2*z)/(x+y+z)
-    xy[,2] <- bl + sin(pi/3)*x/(x+y+z)
+    xy[,2] <- sin(pi/3)*x/(x+y+z)
     return(xy)
 }
 

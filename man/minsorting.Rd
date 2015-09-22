@@ -37,10 +37,11 @@ mcomp: the composition of each mineral (sum of the rows = 1)
 Models grain size distribution of minerals and rock fragments of different densities
 }
 \examples{
-data(Namib,densities)
-N8 <- subset(Namib$HM,select="N8")
-distribution <- minsorting(N8,densities,phi=2,sigmaphi=1,medium="air",by=0.05)
-plot(distribution)
+FPO.ophiolite <- subset(endmembers,select="ophiolite",
+                        components=c('F','px','opaques'))
+distribution <- minsorting(FPO.ophiolite,densities,phi=2,
+                           sigmaphi=1,medium="seawater",by=0.05)
+plot(distribution,cumulative=FALSE)
 }
 \author{
 Alberto Resentini and Pieter Vermeesch
