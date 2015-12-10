@@ -106,8 +106,8 @@ KDE <- function(x,from=NA,to=NA,bw=NA,adaptive=TRUE,log=FALSE,...){
 #' @param x an object of class \code{distributional}
 #' @param from minimum limit of the x-axis.
 #' @param to maximum limit of the x-axis.
-#' #' @param bw the bandwidth of the kernel density estimates. If bw =
-#' NULL, the bandwidth will be set automatically using \code{botev()}
+#' @param bw the bandwidth of the kernel density estimates. If bw =
+#' NA, the bandwidth will be set automatically using \code{botev()}
 #' @param samebandwidth boolean flag indicating whether the same
 #' bandwidth should be used for all samples. If samebandwidth = TRUE
 #' and bw = NULL, then the function will use the median bandwidth of

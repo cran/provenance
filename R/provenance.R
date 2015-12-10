@@ -536,19 +536,18 @@ getdisslist <- function(slist){
 #' @return an object of class \code{GPA}, i.e. a list containing the
 #' following items:
 #' 
-#' \code{points}: a two column vector with the coordinates of the group configuration
+#' \code{points}: a two column vector with the coordinates of the
+#' group configuration
 #'
 #' \code{labels}: a list with the sample names
-#' @author Ian L. Dryden
-#' @references Dryden, Ian, and Maintainer Ian Dryden. "Shapes
-#' package." Vienna, Austria: R Foundation for Statistical Computing
-#' (2012).
+#' @author Pieter Vermeesch
+#' @references Gower, J.C. (1975). Generalized Procrustes analysis,
+#' Psychometrika, 40, 33-50.
 #' @examples
 #' data(Namib)
-#' GPA <- procrustes(Namib$DZ,Namib$HM)
-#' plot(GPA)
+#' gpa <- procrustes(Namib$DZ,Namib$HM)
+#' plot(gpa)
 #' @importFrom MASS isoMDS
-#' @importFrom shapes procGPA
 #' @export
 procrustes <- function(...) {
     dnames <- sapply(match.call(expand.dots=TRUE)[-1], deparse)
@@ -562,13 +561,89 @@ procrustes <- function(...) {
         md <- MASS::isoMDS(disslist[[i]],k=2)
         X[,,i] <- md$points
     }
-    result <- shapes::procGPA(X, scale=TRUE, reflect=TRUE)
+    result <- GPA(X)
     out <- list()
-    out$points <- result$mshape
+    out$points <- result
     out$labels <- labels(disslist[[1]])
     class(out) <- "GPA"
     return(out)
 }
+
+# Generalised Procrustes Analysis algorithm,
+# based on the Wikipedia recipe
+GPA <- function(X,scale=TRUE){
+    if (length(dim(X))<3) {
+        return(X)
+    } else if (dim(X)[3]<3){
+        return(procfit(X[,,1],X[,,2])$Yrot)
+    } else {
+        Y <- X # initialise fitted configurations
+        refconf <- X[,,1] # reference configuration
+        for (j in 1:100){
+            for (i in 1:dim(X)[3]){
+                Y[,,i] <- procfit(refconf,X[,,i])$Yrot
+            }
+            meanconf <- apply(Y,c(1,2),'mean')
+            misfit <- sum((refconf-meanconf)^2)
+            if (misfit < 1e-10){
+                break
+            } else {
+                refconf <- meanconf
+            }
+        }
+        return(refconf)
+    }
+}
+
+# Procrustes analysis of two configurations
+# based on the 'procrustes' function of the 'vegan' package
+procfit <- function (X, Y, scale=TRUE, symmetric=FALSE, ...) {
+    if (nrow(X) != nrow(Y)) 
+        stop("Matrices have different number of rows: ", nrow(X), 
+            " and ", nrow(Y))
+    if (ncol(X) < ncol(Y)) {
+        warning("X has fewer axes than Y: X adjusted to comform Y\n")
+        addcols <- ncol(Y) - ncol(X)
+        for (i in 1:addcols) X <- cbind(X, 0)
+    }
+    ctrace <- function(MAT) sum(MAT^2)
+    c <- 1
+    if (symmetric) {
+        X <- scale(X, scale = FALSE)
+        Y <- scale(Y, scale = FALSE)
+        X <- X/sqrt(ctrace(X))
+        Y <- Y/sqrt(ctrace(Y))
+    }
+    xmean <- apply(X, 2, mean)
+    ymean <- apply(Y, 2, mean)
+    if (!symmetric) {
+        X <- scale(X, scale = FALSE)
+        Y <- scale(Y, scale = FALSE)
+    }
+    XY <- crossprod(X, Y)
+    sol <- svd(XY)
+    A <- sol$v %*% t(sol$u)
+    if (scale) {
+        c <- sum(sol$d)/ctrace(Y)
+    }
+    Yrot <- c * Y %*% A
+    b <- xmean - c * ymean %*% A
+    R2 <- ctrace(X) + c * c * ctrace(Y) - 2 * c * sum(sol$d)
+    reslt <- list(Yrot = Yrot, X = X, ss = R2, rotation = A, 
+        translation = b, scale = c, xmean = xmean, symmetric = symmetric, 
+        call = match.call())
+    reslt$svd <- sol
+    class(reslt) <- "procrustes"
+    reslt
+}
+
+# calculate the trace of a matrix
+tr <- function (m){
+    if (!is.matrix(m) | (dim(m)[1] != dim(m)[2])) 
+        stop("m must be a square matrix")
+    return(sum(diag(m)))
+}
+
 
 #' Individual Differences Scaling of provenance data
 #'

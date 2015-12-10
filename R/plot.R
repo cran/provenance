@@ -1,4 +1,4 @@
-#' #' Plot a kernel density estimate
+#' Plot a kernel density estimate
 #'
 #' Plots an object of class \code{KDE}
 #' @param x an object of class \code{KDE}
@@ -33,10 +33,9 @@ plot.KDEs <- function(x,sname,annotate=TRUE,...){
         M <- max(x$kdes[[sname]]$y)
     }
     if (annotate){
-        graphics::plot(x$kdes[[sname]],pch=NA,...)
+        plot.KDE(x$kdes[[sname]],pch=NA,...)
     } else {
-        graphics::plot(x$kdes[[sname]],pch=x$pch,
-                       axes=FALSE,xlab="",ylab="",...)
+        plot.KDE(x$kdes[[sname]],pch=x$pch,axes=FALSE,xlab="",ylab="",...)
     }
 }
 
@@ -209,6 +208,7 @@ plot.MDS <- function(x,nnlines=FALSE,pch=NA,cex=NA,xlab="",ylab="",xaxt='n',yaxt
 #' @seealso KDEs
 #' @export
 summaryplot <- function(...,ncol=1){
+    oldpar <- graphics::par(no.readonly=T)
     dlist <- list(...)
     nd <- length(dlist)
     dnames <- sapply(match.call(expand.dots=TRUE)[2:(nd+1)], deparse)
@@ -253,6 +253,7 @@ summaryplot <- function(...,ncol=1){
             }
         }
     }
+    graphics::par(oldpar)
 }
 
 #' Plot a ternary diagram
@@ -277,7 +278,6 @@ summaryplot <- function(...,ncol=1){
 #' @export
 plot.ternary <- function(x,type='empty',pch=NA,labels=names(x),
                          showpath=FALSE,...){
-    graphics::par(mar=c(2,1,1,1))
     graphics::plot(c(0,1),c(0,1),type='n',xaxt='n',yaxt='n',
                    xlab='',ylab='',asp=1,bty='n',...)
     if (type=='empty') {
@@ -381,12 +381,13 @@ plotlines <- function(conf,diss) {
 annotation <- function(x,...){ UseMethod("annotation",x) }
 annotation.default <- function(x,...){stop('x not of class KDEs, compositional or distributional in annotation(x)')}
 annotation.KDEs <- function(x,height=NULL,...){
+    oldpar <- graphics::par(no.readonly=T)
     if (is.null(height)){ graphics::par(mar=c(2,0,0,0)) }
     else { graphics::par(mai=c(height/2,0,0,0)) }
     graphics::plot(c(x$from,x$to),c(0,1),type='n',axes=FALSE,xlab="",ylab="",...)
     graphics::Axis(side=1)
     graphics::text(x=.5*(x$from+x$to),.5,label=x$xlabel)
-    graphics::par(mar=c(0,0,0,0))
+    graphics::par(oldpar)
 }
 annotation.compositional <- function(x,height=NULL,...){
     labels <- colnames(x$x)
@@ -395,6 +396,7 @@ annotation.compositional <- function(x,height=NULL,...){
     graphics::pie(comp,labels=labels,col=col,...)
 }
 annotation.distributional <- function(x,height=NULL,...){
+    oldpar <- graphics::par(no.readonly=T)
     if (is.null(height)){ graphics::par(mar=c(2,0,0,0)) }
     else { graphics::par(mai=c(height/2,0,0,0)) }
     m <- min(x$breaks)
@@ -402,7 +404,7 @@ annotation.distributional <- function(x,height=NULL,...){
     graphics::plot(c(m,M),c(0,1),type='n',axes=FALSE,xlab="",ylab="",...)
     graphics::Axis(side=1)
     graphics::text(x=.5*(m+M),.5,label=x$xlabel)
-    graphics::par(mar=c(0,0,0,0))
+    graphics::par(oldpar)
 }
 
 lines.ternary <- function(type='empty'){
