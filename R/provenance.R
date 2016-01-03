@@ -2,11 +2,11 @@
 #'
 #' Reads a data table containing continuous data (e.g. detrital zircon
 #' ages)
-#' @param datafile the path of a .csv file with the input data,
+#' @param fname the path of a .csv file with the input data,
 #' arranged in columns.
 #' @param errorfile the (optional) path of a .csv file with the
 #' standard errors of the input data, arranged by column in the same
-#' order as \code{datafile}. Must be specified if the data are to be
+#' order as \code{fname}. Must be specified if the data are to be
 #' compared with the Sircombe-Hazelton dissimilarity.
 #' @param method an optional string specifying the dissimilarity
 #' measure which should be used for comparing this with other
@@ -15,7 +15,7 @@
 #' \code{method = "SH"}, then \code{errorfile} should be specified. If
 #' \code{method = "SH"} and \code{errorfile} is unspecified, then the
 #' program will default back to the Kolmogorov-Smirnov dissimilarity.
-#' @param xlabel an optional string specifying the nature and units of
+#' @param xlab an optional string specifying the nature and units of
 #' the data.  This string is used to label kernel density estimates.
 #' @param colmap an optional string with the name of one of R's
 #' built-in colour palettes (e.g., heat.colors, terrain.colors,
@@ -31,27 +31,28 @@
 #' 
 #' \code{breaks}: a vector with the locations of the histogram bin edges
 #' 
-#' \code{xlabel}: a string containing the label to be given to the x-axis on all plots
+#' \code{xlab}: a string containing the label to be given to the x-axis on all plots
 #' @examples
 #' agefile <- system.file("DZ.csv",package="provenance")
 #' errfile <- system.file("DZerr.csv",package="provenance")
 #' DZ <- read.distributional(agefile,errfile)
 #' plot(KDE(DZ$x$N1))
 #' @export
-read.distributional <- function(datafile,errorfile=NULL,method="KS",xlabel="age [Ma]",colmap='rainbow') {
+read.distributional <- function(fname,errorfile=NA,method="KS",xlab="age [Ma]",colmap='rainbow') {
     out <- list()
-    if (method=="SH" & is.null(errorfile)) method <- "KS"
+    out$name <- utils::tail(unlist(strsplit(fname, "/|.csv")),1)
+    if (method=="SH" & is.na(errorfile)) method <- "KS"
     class(out) <- "distributional"
     out$method <- method
     out$x <- list()
     out$err <- list()
     out$colmap <- colmap
-    dat <- utils::read.csv(datafile,header=TRUE)
+    dat <- utils::read.csv(fname,header=TRUE)
     ns = length(dat)
     for (i in 1:ns){
         out$x[[names(dat)[i]]] = dat[!is.na(dat[,i]),i]
     }
-    if (!is.null(errorfile)){
+    if (!is.na(errorfile)){
         err <- utils::read.csv(errorfile,header=TRUE)
         for (i in 1:ns) {
             out$err[[names(dat)[i]]] = dat[!is.na(err[,i]),i]
@@ -61,7 +62,7 @@ read.distributional <- function(datafile,errorfile=NULL,method="KS",xlabel="age 
     ng <- length(d) # number of grains
     nb <- log(ng/ns,base=2)+1
     out$breaks <- seq(min(d),max(d),length.out=nb+1)
-    out$xlabel <- xlabel
+    out$xlab <- xlab
     return(out)
 }
 
@@ -92,6 +93,7 @@ read.distributional <- function(datafile,errorfile=NULL,method="KS",xlabel="age 
 #' @export
 read.compositional <- function(fname,method=NULL,colmap='rainbow') {
     out <- list()
+    out$name <- utils::tail(unlist(strsplit(fname, "/|.csv")),1)
     class(out) <- "compositional"
     out$x <- utils::read.csv(fname,header=TRUE,row.names=1)
     if (is.null(method)){
@@ -501,7 +503,7 @@ subset.compositional <- function(x,subset=NULL,select=NULL,components=NULL,...){
     if (methods::is(x,"SRDcorrected")){
         out$restoration <- x$restoration[i]
         for (sname in rownames(out$x)){
-            out$restoration[[sname]] <- x$restoration[[sname]][,j]
+            out$restoration[[sname]] <- subset(x$restoration[[sname]],select=j)
         }
     }
     return(out)
@@ -522,14 +524,11 @@ getdisslist <- function(slist){
     return(disslist)
 }
 
-#' Generalised Procrustes Analysis (GPA)
+#' Generalised Procrustes Analysis of provenance data
 #'
 #' Given a number of input datasets, this function performs an MDS
 #' analysis on each of these and the feeds the resulting
-#' configurations into a GPA algorithm, which uses a combination of
-#' transformations (reflections, rotations, translations and scaling)
-#' to find a 'consensus' configuration which best matches all the
-#' component configurations in a least-squares sense.
+#' configurations into the \code{GPA()} function.
 #'
 #' @param ... a sequence of datasets of classes \code{distributional}
 #' and \code{compositional}
@@ -548,6 +547,7 @@ getdisslist <- function(slist){
 #' gpa <- procrustes(Namib$DZ,Namib$HM)
 #' plot(gpa)
 #' @importFrom MASS isoMDS
+#' @seealso GPA
 #' @export
 procrustes <- function(...) {
     dnames <- sapply(match.call(expand.dots=TRUE)[-1], deparse)
@@ -569,8 +569,21 @@ procrustes <- function(...) {
     return(out)
 }
 
-# Generalised Procrustes Analysis algorithm,
-# based on the Wikipedia recipe
+#  based on a Wikipedia algorithm
+#' Generalised Procrustes Analysis of configurations
+#'
+#' Given a number of (2D) configurations, this function uses a
+#' combination of transformations (reflections, rotations,
+#' translations and scaling) to find a 'consensus' configuration which
+#' best matches all the component configurations in a least-squares
+#' sense.
+#' 
+#' @param X a list of dissimilarity matrices
+#' @param scale boolean flag indicating if the transformation should include the scaling operation
+#' @return a two column vector with the coordinates of the
+#' group configuration
+#' @seealso procrustes
+#' @export
 GPA <- function(X,scale=TRUE){
     if (length(dim(X))<3) {
         return(X)
@@ -693,13 +706,21 @@ tr <- function (m){
 #' @importFrom smacof smacofIndDiff
 #' @export
 indscal <- function(...,type='ordinal'){
-    dnames <- sapply(match.call(expand.dots=TRUE)[-1], deparse)
     slist <- list(...)
+    dnames <- get.data.names(slist)
     names(slist) <- dnames
     disslist <- getdisslist(slist)
     out <- smacof::smacofIndDiff(disslist, constraint = "indscal",type=type)
     class(out) <- "INDSCAL"
     return(out)
+}
+
+get.data.names <- function(dlist){
+    out <- c()
+    for (d in dlist){
+        out <- c(out,d$name)
+    }
+    out
 }
 
 # set minimum and maximum values of a dataset

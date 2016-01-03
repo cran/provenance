@@ -2,7 +2,7 @@
 % Please edit documentation in R/provenance.R
 \name{procrustes}
 \alias{procrustes}
-\title{Generalised Procrustes Analysis (GPA)}
+\title{Generalised Procrustes Analysis of provenance data}
 \usage{
 procrustes(...)
 }
@@ -22,10 +22,7 @@ group configuration
 \description{
 Given a number of input datasets, this function performs an MDS
 analysis on each of these and the feeds the resulting
-configurations into a GPA algorithm, which uses a combination of
-transformations (reflections, rotations, translations and scaling)
-to find a 'consensus' configuration which best matches all the
-component configurations in a least-squares sense.
+configurations into the \code{GPA()} function.
 }
 \examples{
 data(Namib)
@@ -38,5 +35,8 @@ Pieter Vermeesch
 \references{
 Gower, J.C. (1975). Generalized Procrustes analysis,
 Psychometrika, 40, 33-50.
+}
+\seealso{
+GPA
 }
 

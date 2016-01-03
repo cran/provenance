@@ -58,9 +58,8 @@ getSS <- function(dens,medium,SRD,phi){
 #' 138-151.
 #' @seealso restore
 #' @examples
-#' FPO.ophiolite <- subset(endmembers,select="ophiolite",
-#'                         components=c('F','px','opaques'))
-#' distribution <- minsorting(FPO.ophiolite,densities,phi=2,
+#' data(endmembers,densities)
+#' distribution <- minsorting(endmembers,densities,sname='ophiolite',phi=2,
 #'                            sigmaphi=1,medium="seawater",by=0.05)
 #' plot(distribution,cumulative=FALSE)
 #' @export

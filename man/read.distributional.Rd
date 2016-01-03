@@ -4,16 +4,16 @@
 \alias{read.distributional}
 \title{Read a .csv file with continuous (detrital zircon) data}
 \usage{
-read.distributional(datafile, errorfile = NULL, method = "KS",
-  xlabel = "age [Ma]", colmap = "rainbow")
+read.distributional(fname, errorfile = NA, method = "KS",
+  xlab = "age [Ma]", colmap = "rainbow")
 }
 \arguments{
-\item{datafile}{the path of a .csv file with the input data,
+\item{fname}{the path of a .csv file with the input data,
 arranged in columns.}
 
 \item{errorfile}{the (optional) path of a .csv file with the
 standard errors of the input data, arranged by column in the same
-order as \code{datafile}. Must be specified if the data are to be
+order as \code{fname}. Must be specified if the data are to be
 compared with the Sircombe-Hazelton dissimilarity.}
 
 \item{method}{an optional string specifying the dissimilarity
@@ -24,7 +24,7 @@ Kolmogorov-Smirnov) or \code{"SH"} (for Sircombe and Hazelton). If
 \code{method = "SH"} and \code{errorfile} is unspecified, then the
 program will default back to the Kolmogorov-Smirnov dissimilarity.}
 
-\item{xlabel}{an optional string specifying the nature and units of
+\item{xlab}{an optional string specifying the nature and units of
 the data.  This string is used to label kernel density estimates.}
 
 \item{colmap}{an optional string with the name of one of R's
@@ -43,7 +43,7 @@ following items:
 
 \code{breaks}: a vector with the locations of the histogram bin edges
 
-\code{xlabel}: a string containing the label to be given to the x-axis on all plots
+\code{xlab}: a string containing the label to be given to the x-axis on all plots
 }
 \description{
 Reads a data table containing continuous data (e.g. detrital zircon

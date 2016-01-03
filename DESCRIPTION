@@ -1,6 +1,6 @@
 Package: provenance
 Title: Statistical Toolbox for Sedimentary Provenance Analysis
-Version: 1.0
+Version: 1.1
 Authors@R: person("Pieter", "Vermeesch", , "p.vermeesch@ucl.ac.uk", role = c("aut", "cre"))
 Description: Bundles a number of established statistical methods to facilitate
     the visual interpretation of large datasets in sedimentary geology. Includes
@@ -13,7 +13,8 @@ Description: Bundles a number of established statistical methods to facilitate
     compared with the Aitchison and Bray-Curtis distances. Also included are tools
     to plot compositional data on ternary diagrams, to calculate the sample size
     required for specified levels of statistical precision, and to assess the
-    effects of hydraulic sorting on detrital compositions.
+    effects of hydraulic sorting on detrital compositions. Includes an intuitive 
+    query-based user interface for users who are not proficient in R.
 Author: Pieter Vermeesch [aut, cre]
 Maintainer: Pieter Vermeesch <p.vermeesch@ucl.ac.uk>
 Depends: R (>= 3.0.2)
@@ -22,6 +23,6 @@ License: GPL-2
 LazyData: true
 RoxygenNote: 5.0.1
 NeedsCompilation: no
-Packaged: 2015-12-10 18:29:24 UTC; pvermees
+Packaged: 2016-01-03 21:23:07 UTC; pvermees
 Repository: CRAN
-Date/Publication: 2015-12-10 23:06:19
+Date/Publication: 2016-01-03 22:35:50

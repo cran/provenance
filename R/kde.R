@@ -70,6 +70,7 @@ Abramson <- function(dat,from,to,bw,...){
 KDE <- function(x,from=NA,to=NA,bw=NA,adaptive=TRUE,log=FALSE,...){
     out <- list()
     class(out) <- "KDE"
+    out$name <- deparse(substitute(x))
     out$log <- log
     if (is.na(from) | is.na(to)) {
         mM <- setmM(x,from,to,log)
@@ -161,11 +162,13 @@ KDEs <- function(x,from=NA,to=NA,bw=NA,samebandwidth=TRUE,
     }
     out <- list()
     class(out) <- "KDEs"
+    out$name <- x$name
     out$kdes <- thekdes
     out$from <- from
     out$to <- to
     out$themax <- themax
     out$pch <- pch
-    out$xlabel <- x$xlabel
+    out$log <- log
+    out$xlab <- x$xlab
     return(out)
 }

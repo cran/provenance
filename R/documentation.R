@@ -1,28 +1,3 @@
-#' library(provenance)
-#'
-#' 'provenance' is a package for the statistical treatment of large
-#' datasets in sedimentary provenance analysis.
-#'
-#' To get detailed 'getting started' introduction use help.start() or
-#' help.start(browser='myfavouritebrowser') go to 'Packages',
-#' 'provenance', 'User guides, package vignettes and other
-#' documentation' and then launch the file 'provenance.pdf' from
-#' there. Please also check the website:
-#' http://provenance.london-geochron.com for further details and
-#' updates.
-#' @name provenance
-#' @docType package
-#' @examples
-#' library('provenance')
-#' data(Namib)
-#' attach(Namib)
-#' summaryplot(KDEs(DZ),HM,PT,Major,Trace)
-#' @author Pieter Vermeesch
-#' @references Vermeesch, P., Resentini, A. and Garzanti, E., an R
-#' package for statistical provenance analysis, Sedimentary Geology
-#' (in review).
-NULL
-
 #' An example dataset
 #'
 #' A large dataset of provenance data from Namibia comprised of 14

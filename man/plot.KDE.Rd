@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{plot.KDE}
 \alias{plot.KDE}
-\title{#' Plot a kernel density estimate}
+\title{Plot a kernel density estimate}
 \usage{
 \method{plot}{KDE}(x, pch = "|", xlab = "age [Ma]", ylab = "", ...)
 }

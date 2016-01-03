@@ -74,10 +74,10 @@ plot.distributional <- function(x,snames=NULL,annotate=TRUE,CAD=FALSE,
     col <- do.call(colmap,list(n))
     if (n>1){
         graphics::plot(stats::ecdf(x$x[[snames[1]]]),pch=pch,verticals=verticals,
-             col=col[1],xlab=x$xlabel,main="",...)
+             col=col[1],xlab=x$xlab,main="",...)
         for (i in 2:n){
             graphics::lines(stats::ecdf(x$x[[snames[i]]]),pch=pch,verticals=verticals,
-                  col=col[i],xlab=x$xlabel,main="",...)
+                  col=col[i],xlab=x$xlab,main="",...)
         }
         graphics::legend("bottomright",legend=snames,lwd=1,col=col)
     } else {
@@ -172,16 +172,24 @@ plot.PCA <- function(x,...){
 #' @seealso MDS
 #' @method plot MDS
 #' @export
-plot.MDS <- function(x,nnlines=FALSE,pch=NA,cex=NA,xlab="",ylab="",xaxt='n',yaxt='n',...){
-    graphics::plot(x$points, type="n", asp=1, xlab=xlab, ylab=ylab,xaxt=xaxt,yaxt=yaxt,...)
+plot.MDS <- function(x,nnlines=FALSE,pch=NA,cex=NA,
+                     xlab="",ylab="",xaxt='n',yaxt='n',...){
+    graphics::plot(x$points, type="n", asp=1, xlab=xlab,
+                   ylab=ylab,xaxt=xaxt,yaxt=yaxt,...)
     # draw lines between closest neighbours
+    pos <- NULL
     if (nnlines) {
         if (is.na(pch)) pch=21
         if (is.na(cex)) cex=2.5
         plotlines(x$points,x$diss)
+    } else {
+        if (!is.na(pch) & is.na(cex)) {
+            cex <- 1
+            pos <- 3
+        }
     }
     graphics::points(x$points, pch=pch, cex=cex, col='red', bg='white')
-    graphics::text(x$points, labels = labels(x$diss))
+    graphics::text(x$points, labels = labels(x$diss), pos=pos)
     if (!x$classical){
         grDevices::dev.new()
         shep <- MASS::Shepard(x$diss, x$points)
@@ -210,8 +218,7 @@ plot.MDS <- function(x,nnlines=FALSE,pch=NA,cex=NA,xlab="",ylab="",xaxt='n',yaxt
 summaryplot <- function(...,ncol=1){
     oldpar <- graphics::par(no.readonly=T)
     dlist <- list(...)
-    nd <- length(dlist)
-    dnames <- sapply(match.call(expand.dots=TRUE)[2:(nd+1)], deparse)
+    dnames <- get.data.names(dlist)
     names(dlist) <- dnames
     classes <- unlist(lapply(dlist,class))
     nd <- length(dlist) # number of datasets
@@ -224,7 +231,7 @@ summaryplot <- function(...,ncol=1){
     np <- (nppc+1)*ncol*(nd+1) # number of subpanels
     graphics::layout(matrix(1:np,nppc+1,length(w)),w,rep(1,nppc+1))
     si <- ceiling(seq(from=0,to=ns,length.out=ncol+1)) # sample index
-    graphics::par(xpd=TRUE,mar=c(0,0,0,0))
+    graphics::par(xpd=TRUE,mar=c(0,0,0,0))#, mfcol=c(nppc,nd))
     for (i in 1:ncol){ # loop through columns
         for (j in (si[i]+1):(si[i+1])){
             sname <- snames[j]
@@ -247,7 +254,7 @@ summaryplot <- function(...,ncol=1){
             if (i==ncol){
                 ds <- grDevices::dev.size()[2]/(nppc+1)
                 annotation(d,height=ds)
-                graphics::title(dnames[k],line=-1)
+                graphics::title(d$name,line=-1)
             } else {
                 emptyplot()
             }
@@ -261,8 +268,7 @@ summaryplot <- function(...,ncol=1){
 #' Plots triplets of compositional data on a ternary diagram
 #' @param x an object of class \code{ternary}
 #' @param type adds annotations to the ternary diagram, one of either
-#' \code{empty}, \code{QFL}, \code{QFL.dickinson} or
-#' \code{QmFLt.dickinson}
+#' \code{empty}, \code{QFL} or \code{QmFLt.dickinson}
 #' @param pch plot character, see \code{?par} for details
 #' @param labels vector of strings to be added to the plot symbols
 #' @param showpath if \code{x} has class \code{SRDcorrected}, and
@@ -381,13 +387,25 @@ plotlines <- function(conf,diss) {
 annotation <- function(x,...){ UseMethod("annotation",x) }
 annotation.default <- function(x,...){stop('x not of class KDEs, compositional or distributional in annotation(x)')}
 annotation.KDEs <- function(x,height=NULL,...){
-    oldpar <- graphics::par(no.readonly=T)
+    oldpar <- graphics::par()
     if (is.null(height)){ graphics::par(mar=c(2,0,0,0)) }
     else { graphics::par(mai=c(height/2,0,0,0)) }
-    graphics::plot(c(x$from,x$to),c(0,1),type='n',axes=FALSE,xlab="",ylab="",...)
+    if (x$log) {
+        graphics::plot(c(x$from,x$to),c(0,1),type='n',log='x',
+                       axes=FALSE,xlab="",ylab="",...)
+    } else {
+        graphics::plot(c(x$from,x$to),c(0,1),type='n',
+                       axes=FALSE,xlab="",ylab="",...)
+    }
     graphics::Axis(side=1)
-    graphics::text(x=.5*(x$from+x$to),.5,label=x$xlabel)
-    graphics::par(oldpar)
+    if (x$log){
+        middle <- sqrt(x$from*x$to)
+    } else {
+        middle <- .5*(x$from+x$to)
+    }
+    graphics::text(x=middle,.5,label=x$xlab)
+    graphics::par(mai=oldpar$mai)
+    graphics::par(mar=oldpar$mar)
 }
 annotation.compositional <- function(x,height=NULL,...){
     labels <- colnames(x$x)
@@ -396,15 +414,16 @@ annotation.compositional <- function(x,height=NULL,...){
     graphics::pie(comp,labels=labels,col=col,...)
 }
 annotation.distributional <- function(x,height=NULL,...){
-    oldpar <- graphics::par(no.readonly=T)
+    oldpar <- graphics::par()
     if (is.null(height)){ graphics::par(mar=c(2,0,0,0)) }
     else { graphics::par(mai=c(height/2,0,0,0)) }
     m <- min(x$breaks)
     M <- max(x$breaks)
     graphics::plot(c(m,M),c(0,1),type='n',axes=FALSE,xlab="",ylab="",...)
     graphics::Axis(side=1)
-    graphics::text(x=.5*(m+M),.5,label=x$xlabel)
-    graphics::par(oldpar)
+    graphics::text(x=.5*(m+M),.5,label=x$xlab)
+    graphics::par(mai=oldpar$mai)
+    graphics::par(mar=oldpar$mar)
 }
 
 lines.ternary <- function(type='empty'){

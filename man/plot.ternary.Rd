@@ -11,8 +11,7 @@
 \item{x}{an object of class \code{ternary}}
 
 \item{type}{adds annotations to the ternary diagram, one of either
-\code{empty}, \code{QFL}, \code{QFL.dickinson} or
-\code{QmFLt.dickinson}}
+\code{empty}, \code{QFL} or \code{QmFLt.dickinson}}
 
 \item{pch}{plot character, see \code{?par} for details}
 
