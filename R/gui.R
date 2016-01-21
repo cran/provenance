@@ -7,8 +7,8 @@
 #' and examples are provided on \url{http://provenance.london-geochron.com}
 #' @author Pieter Vermeesch
 #' @references Vermeesch, P., Resentini, A. and Garzanti, E., an R
-#' package for statistical provenance analysis, Sedimentary Geology
-#' (in review).
+#' package for statistical provenance analysis, Sedimentary Geology,
+#' doi:10.1016/j.sedgeo.2016.01.009.
 #' @seealso \url{http://provenance.london-geochron.com}
 #' @export
 provenance <- function(){
@@ -95,6 +95,7 @@ gui.plot.single <- function(){
             "4 - Kernel Density Estimates")
     response1 <- readline()
     if (response1 == '1'){
+        showpath = FALSE
         dat <- gui.open.compositional()
         message("Plot background lines?\n",
                 "1 - QFL classification\n",
@@ -341,7 +342,8 @@ gui.save.plots <- function(){
 
 gui.help <- function(){
     while (TRUE){
-    message("1 - compositional data\n",
+    message("Choose a help topic:\n",
+            "1 - compositional data\n",
             "2 - distributional data\n",
             "3 - mineral densities\n",
             "4 - sample size calculation\n",
@@ -354,7 +356,8 @@ gui.help <- function(){
         response <- readline()
         if (response == "1"){
             message("Formatting requirements of compositional data files:\n",
-                    "\nA compositional data file consists of a comma separated table ",
+                    "---------------------------------------------------\n",
+                    "A compositional data file consists of a comma separated table ",
                     "in which the rows correspond to samples and the columns to categories. ",
                     "For example:\n",
                     "sample,zr,tm,rt,TiOx,sph,ap,ep,gt,st,and,ky,sil,amp,cpx,opx\n",
@@ -370,10 +373,11 @@ gui.help <- function(){
                     "N10,2,0,0,0,4,0,16,28,2,0,1,0,34,126,0\n",
                     "If you want to use the Minsorting function and SRD correction, ",
                     "it is important to make sure that the component labels are consistent with ",
-                    "the densities table.")
+                    "the densities table.\n")
         } else if (response == "2"){
             message("Formatting requirements for distributional data files:\n",
-                    "\nA distributional data file consists of a comma separated table ",
+                    "-----------------------------------------------------\n",
+                    "A distributional data file consists of a comma separated table ",
                     "in which the columns correspond to different samples, each of which ",
                     "may contain a different number of single grain analyses. ",
                     "For example:\n",
@@ -397,12 +401,13 @@ gui.help <- function(){
                     "489.4,,791.5,,1279.3,,1120.2,1767.5,,1157.1\n",
                     "744.5,,2160.2,,1386.9,,1989.2,,,811.5\n",
                     "1287.4,,1043.6,,1210.8,,1163.4,,,1554.9\n",
-                    "\nIt is also possible (though optional) to specify the analytical ",
+                    "It is also possible (though optional) to specify the analytical ",
                     "uncertainties of these measurements. They are stored in a separate ",
-                    ".csv file with exactly the same format as the measurement as shown above.")
+                    ".csv file with exactly the same format as the measurement as shown above.\n")
         } else if (response == "3"){
             message("Formatting requirements for mineral density files:\n",
-                    "\nThe Minsorting function and SRD correction require a table of ",
+                    "-------------------------------------------------\n",
+                    "The Minsorting function and SRD correction require a table of ",
                     "mineral densities. The provenance package comes with a default table ",
                     "but it is also possible to specify a different set of densities. It ",
                     "is important that the labels used for the different components in this ",
@@ -411,10 +416,11 @@ gui.help <- function(){
                     "Q,F,Lv,Ls,Lm,mica,opaques,zr,tm,rt,sph,ap,mon,oth,ep,gt,ctd,",
                     "st,and,ky,sil,amp,px,ol\n",
                     "2.65,2.61,2.6,2.65,2.75,2.4,5,4.65,3.15,4.25,3.5,3.2,5.15,3.5,3.45,4,",
-                    "3.6,3.75,3.15,3.6,3,3.2,3.3,3.35")
+                    "3.6,3.75,3.15,3.6,3,3.2,3.3,3.35\n")
         } else if (response == "4"){
             message("Sample size calculations:\n",
-                    "\nOn the most basic level, provenance analysis requires the geologist to ",
+                    "------------------------\n",
+                    "On the most basic level, provenance analysis requires the geologist to ",
                     "identify certain properties in a representative number of grains from ",
                     "each sample. The question then arises how many grains constitute a ",
                     "'representative' number of grains. The answer to this question depends ",
@@ -432,10 +438,12 @@ gui.help <- function(){
                     "Vermeesch, P., 2004. How many grains are needed for a provenance study? ",
                     "Earth and Planetary Science Letters 224, 441-451.\n",
                     "Vermeesch, P., Resentini, A. and Garzanti, E., 2016. An R package for ",
-                    "statistical provenance analysis. Sedimentary Geology (in press).\n")
+                    "statistical provenance analysis. Sedimentary Geology, ",
+                    "doi:10.1016/j.sedgeo.2016.01.009.\n")
         } else if (response == "5"){
             message("Cumulative Age Distributions (CADs):\n",
-                    "\nThe probability distribution of detrital zircon U-Pb ages or any other ",
+                    "-----------------------------------\n",
+                    "The probability distribution of detrital zircon U-Pb ages or any other ",
                     "distributional dataset may be estimated using histograms or kernel density ",
                     "estimates (KDEs). For a sample of limited size, these estimates never exactly ",
                     "agree with the true age distribution, but are smooth approximation thereof. ",
@@ -447,10 +455,12 @@ gui.help <- function(){
                     "(California) using detrital apatite fission track thermochronology. ",
                     "Journal of Geophysical Research (Earth Surface) 112, 3004. doi:10.1029/2006JF000671.\n",
                     "Vermeesch, P., Resentini, A. and Garzanti, E., 2016. An R package for ",
-                    "statistical provenance analysis. Sedimentary Geology (in press).\n")
+                    "statistical provenance analysis. Sedimentary Geology, ",
+                    "doi:10.1016/j.sedgeo.2016.01.009.\n")
         } else if (response == "6"){
-            message("Kernel Density Estimation (KDE)\n",
-                    "\nA large body of statistical literature has been written on the subject ",
+            message("Kernel Density Estimation (KDE):\n",
+                    "-------------------------------\n",
+                    "A large body of statistical literature has been written on the subject ",
                     "of probability density estimation. The most widely used tools are the ",
                     "traditional histogram, which is discrete and discontinuous, and the Kernel ",
                     "Density Estimator (KDE), which is a smooth and continuous alternative. ",
@@ -465,10 +475,12 @@ gui.help <- function(){
                     "Vermeesch, P., 2012. On the visualisation of detrital age distributions. ",
                     "Chemical Geology 312-313, 190-194. doi:10.1016/j.chemgeo.2012.04.021.\n",
                     "Vermeesch, P., Resentini, A. and Garzanti, E., 2016. An R package for ",
-                    "statistical provenance analysis. Sedimentary Geology (in press).\n")
+                    "statistical provenance analysis. Sedimentary Geology, ",
+                    "doi:10.1016/j.sedgeo.2016.01.009.\n")
         } else if (response == "7"){
-            message("Minsorting and SRD correction\n",
-                    "\nTo facilitate the comparison of detrital modes for provenance analysis ",
+            message("Minsorting and SRD correction:\n",
+                    "-----------------------------\n",
+                    "To facilitate the comparison of detrital modes for provenance analysis ",
                     "or stratigraphic correlation, we need to first remove the often significant ",
                     "compositional differences among sediment samples that are caused by ",
                     "hydrodynamic processes in the depositional environment. Intersample modal ",
@@ -497,9 +509,11 @@ gui.help <- function(){
                     "with application to detrital geochronology and provenance studies. ",
                     "Computers & Geosciences 59, 90-97.\n",
                     "Vermeesch, P., Resentini, A. and Garzanti, E., 2016. An R package for ",
-                    "statistical provenance analysis. Sedimentary Geology (in press).\n")
+                    "statistical provenance analysis. Sedimentary Geology, ",
+                    "doi:10.1016/j.sedgeo.2016.01.009.\n")
         } else if (response == "8"){
-            message("Multidimensional Scaling\n",
+            message("Multidimensional Scaling:\n",
+                    "------------------------\n",
                     "An increasing number of provenance studies are based on not just a few ",
                     "but many samples. The large datasets resulting from such studies call ",
                     "for a dimension-reducing technique such as Multi-Dimensional Scaling (MDS). ",
@@ -525,10 +539,12 @@ gui.help <- function(){
                     "Vermeesch, P., 2013. Multi-sample comparison of detrital age distributions. ",
                     "Chemical Geology 341, 140-146.\n",
                     "Vermeesch, P., Resentini, A. and Garzanti, E., 2016. An R package for ",
-                    "statistical provenance analysis. Sedimentary Geology (in press).\n")
+                    "statistical provenance analysis. Sedimentary Geology, ",
+                    "doi:10.1016/j.sedgeo.2016.01.009.\n")
         } else if (response == "9"){
-            message("Procrustes analysis and 3-way MDS\n",
-                    "\nProcrustes analysis and 3-way MDS are simple yet powerful tools ",
+            message("Procrustes analysis and 3-way MDS:\n",
+                    "---------------------------------\n",
+                    "Procrustes analysis and 3-way MDS are simple yet powerful tools ",
                     "to extract geological insights from large, multi-method provenance datasets. ",
                     "Procrustes analysis is the process by which a combination of ",
                     "shape-preserving transformations is used to match the shape of ",
@@ -550,7 +566,8 @@ gui.help <- function(){
                     "Vermeesch, P., Garzanti, E., 2015. Making geological sense of 'Big Data' ",
                     "in sedimentary provenance analysis. Chemical Geology 409, 20-27.\n",
                     "Vermeesch, P., Resentini, A. and Garzanti, E., 2016. An R package for ",
-                    "statistical provenance analysis. Sedimentary Geology (in press).\n"
+                    "statistical provenance analysis. Sedimentary Geology, ",
+                    "doi:10.1016/j.sedgeo.2016.01.009.\n"
                     )
         } else {
             break
@@ -588,29 +605,26 @@ gui.open.distributional <- function(){
     message('Open a distributional dataset:')
     fname <- file.choose()
     errorfile <- NA
-    dosubset <- FALSE
     dat <- read.distributional(fname,errorfile)
+    dat$name <- utils::tail(unlist(strsplit(fname, "/|.csv")),1)
     while (TRUE){
         message("Options:\n",
                 "1 - Subset samples\n",
-                "2 - Load analytical uncertainties\n",
+                "2 - Combine samples\n",
+                "3 - Load analytical uncertainties\n",
                 "c - Continue")
         response <- readline()
         if (response == "1"){
-            subsamp <- gui.subset.samples(dat,TRUE)
-            dosubset <- TRUE
-            if (!is.na(errorfile)) break
+            dat <- gui.subset.samples(dat,TRUE)
         } else if (response == "2"){
+            dat <- gui.combine.samples(dat)
+        } else if (response == "3"){
             errorfile <- file.choose()
-            if (dosubset) break
+            dat <- read.distributional(fname,errorfile)
         } else {
-            break
+            return(dat)
         }
     }
-    dat <- read.distributional(fname,errorfile)
-    dat$name <- utils::tail(unlist(strsplit(fname, "/|.csv")),1)
-    if (dosubset) dat <- eval(parse(text=paste0("subset(dat,select=",subsamp,")")))
-    dat
 }
 
 gui.SRD <- function(dat){
@@ -628,6 +642,36 @@ gui.subset.components <- function(dat){
     subcomp <- gsub(" ","",response) # get rid of spaces
     subcomp <- paste0("c('",gsub(",","','",subcomp),"')")  # add apostrophes
     eval(parse(text=paste0("subset(dat,components=",subcomp,")")))
+}
+
+gui.combine.samples <- function(dat){
+    samples <- names(dat$x)
+    combinations <- ""
+    while (TRUE){
+        samplist <- paste(samples,collapse=',')
+        message("Select a group of samples from ",
+                "the following list:\n", samplist ,"\n",
+                "Enter as a comma separated list of labels ",
+                "or click [Return] to exit:")
+        response <- readline()
+        if (response == ""){
+            break
+        } else {
+            subsamples <- strsplit(response,',')[[1]]
+            subsamplist <- gsub(" ","",response) # get rid of spaces
+            subsamplist <- paste0("c('",gsub(",","','",subsamplist),"')")  # add apostrophes
+            sampname <- readline(paste0("Name of the combined samples? "))
+            combinations <- paste0(combinations,sampname,"=",subsamplist,",")
+            samples <- c(sampname,samples[which(!samples %in% subsamples)])
+        }
+    }
+    leftovers <- samples[which(samples %in% names(dat$x))]
+    for (leftover in leftovers){
+        combinations <- paste0(combinations,leftover,"=c('",leftover,"'),")
+    }
+    # replace last comma with bracket
+    substr(combinations,start=nchar(combinations),stop=nchar(combinations)) <- ")"
+    eval(parse(text=paste0("combine(dat,",combinations)))
 }
 
 gui.amalgamate.components <- function(dat){

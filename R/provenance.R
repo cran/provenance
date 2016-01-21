@@ -657,64 +657,6 @@ tr <- function (m){
     return(sum(diag(m)))
 }
 
-
-#' Individual Differences Scaling of provenance data
-#'
-#' Performs 3-way Multidimensional Scaling analysis using Carroll and
-#' Chang (1970)'s INdividual Differences SCALing method as implemented
-#' using De Leeuw and Mair (2011)'s stress majorization algorithm.
-#' @param ... a sequence of datasets of class \code{distributional} or
-#' \code{compositional}
-#' @param type is either "ratio", "interval", or "ordinal"
-#' @return an object of class \code{INDSCAL}, i.e. a list containing
-#' the following items:
-#' 
-#' delta: Observed dissimilarities
-#'
-#' obsdiss: List of observed dissimilarities, normalized
-#'
-#' confdiss: List of configuration dissimilarities
-#'
-#' conf: List of matrices of final configurations
-#' 
-#' gspace: Joint configurations aka group stimulus space
-#' 
-#' cweights: Configuration weights
-#'
-#' stress: Stress-1 value
-#'
-#' spp: Stress per point
-#' 
-#' sps: Stress per subject (matrix)
-#' 
-#' ndim: Number of dimensions
-#'
-#' model: Type of smacof model
-#' 
-#' niter: Number of iterations
-#'
-#' nobj: Number of objects
-#' @author
-#' Jan de Leeuw and Patrick Mair
-#' @references
-#' de Leeuw, J., & Mair, P. (2009). Multidimensional scaling using
-#' majorization: The R package smacof. Journal of Statistical
-#' Software, 31(3), 1-30, < http://www.jstatsoft.org/v31/i03/>
-#' @examples
-#' data(Namib)
-#' plot(indscal(Namib$DZ,Namib$HM))
-#' @importFrom smacof smacofIndDiff
-#' @export
-indscal <- function(...,type='ordinal'){
-    slist <- list(...)
-    dnames <- get.data.names(slist)
-    names(slist) <- dnames
-    disslist <- getdisslist(slist)
-    out <- smacof::smacofIndDiff(disslist, constraint = "indscal",type=type)
-    class(out) <- "INDSCAL"
-    return(out)
-}
-
 get.data.names <- function(dlist){
     out <- c()
     for (d in dlist){
@@ -923,6 +865,37 @@ amalgamate.SRDcorrected <- function(X,...){
             amalgamate.default(X$restoration[[sname]],...)
     }
     return(out)
+}
+
+#' Combine samples of distributional data
+#'
+#' Lumps all single grain analyses of several samples together under a new name
+#' @param X a distributional dataset
+#' @param ... a series of new labels assigned to strings or vectors of strings
+#' denoting the samples that need amalgamating
+#' @return a distributional data object with fewer samples than X
+#' @examples
+#' data(Namib)
+#' combined <- combine(Namib$DZ,east=c('N3','N4','N5','N6','N7','N8','N9','N10'),
+#'                        west=c('N1','N2','N11','N12','T8','T13'))
+#' summaryplot(KDEs(combined))
+#' @export
+combine <- function(X,...){
+    out <- X
+    groups <- list(...)
+    ng <- length(groups)
+    labels <- names(groups)
+    out$x <- list()
+    out$err <- list()
+    loadErr <- (length(X$err)>0)
+    for (i in 1:ng){
+        out$x[[labels[i]]] <- NULL
+        for (g in groups[[i]]){
+            out$x[[labels[i]]] <- c(out$x[[labels[i]]],X$x[[g]])
+            if (loadErr) { out$err[[labels[i]]] <- c(out$err[[labels[i]]],X$err[[g]]) }
+        }
+    }
+    return(out)    
 }
 
 ternaryclosure <- function(X,x,y,z){ 

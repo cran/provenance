@@ -7,7 +7,7 @@
 provenance()
 }
 \description{
-For those users less familiar with the syntax of the \code{R}
+For those less familiar with the syntax of the \code{R}
 programming language, the \code{provenance()} function provides
 a user-friendly way to access the most important functionality
 in the form of a menu-based query interface. Further details
@@ -18,8 +18,8 @@ Pieter Vermeesch
 }
 \references{
 Vermeesch, P., Resentini, A. and Garzanti, E., an R
-package for statistical provenance analysis, Sedimentary Geology
-(in review).
+package for statistical provenance analysis, Sedimentary Geology,
+doi:10.1016/j.sedgeo.2016.01.009.
 }
 \seealso{
 \url{http://provenance.london-geochron.com}

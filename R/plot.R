@@ -33,9 +33,9 @@ plot.KDEs <- function(x,sname,annotate=TRUE,...){
         M <- max(x$kdes[[sname]]$y)
     }
     if (annotate){
-        plot.KDE(x$kdes[[sname]],pch=NA,...)
+        plot.KDE(x$kdes[[sname]],pch=NA,ylim=c(0,M),...)
     } else {
-        plot.KDE(x$kdes[[sname]],pch=x$pch,axes=FALSE,xlab="",ylab="",...)
+        plot.KDE(x$kdes[[sname]],pch=x$pch,axes=FALSE,xlab="",ylab="",ylim=c(0,M),...)
     }
 }
 
