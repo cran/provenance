@@ -268,28 +268,31 @@ summaryplot <- function(...,ncol=1){
 #' Plots triplets of compositional data on a ternary diagram
 #' @param x an object of class \code{ternary}
 #' @param type adds annotations to the ternary diagram, one of either
-#' \code{empty}, \code{QFL} or \code{QmFLt.dickinson}
+#'     \code{empty}, \code{QFL.descriptive}, \code{QFL.folk} or
+#'     \code{QFL.dickinson}
 #' @param pch plot character, see \code{?par} for details
 #' @param labels vector of strings to be added to the plot symbols
 #' @param showpath if \code{x} has class \code{SRDcorrected}, and
-#' \code{showpath}==TRUE, the intermediate values of the SRD correction
-#' will be plotted on the ternary diagram as well as the final composition
+#'     \code{showpath}==TRUE, the intermediate values of the SRD
+#'     correction will be plotted on the ternary diagram as well as
+#'     the final composition
+#' @param col colour to be used for the background lines (if applicable)
 #' @param ... optional arguments to the generic \code{points} function
 #' @examples
 #' data(Namib)
 #' tern <- ternary(Namib$PT,'Q',c('KF','P'),c('Lm','Lv','Ls'))
-#' plot(tern,type='QFL.dickinson')
+#' plot(tern,type='QFL.descriptive')
 #' @seealso ternary
 #' @method plot ternary
 #' @export
 plot.ternary <- function(x,type='empty',pch=NA,labels=names(x),
-                         showpath=FALSE,...){
+                         showpath=FALSE,col='cornflowerblue',...){
     graphics::plot(c(0,1),c(0,1),type='n',xaxt='n',yaxt='n',
                    xlab='',ylab='',asp=1,bty='n',...)
     if (type=='empty') {
         cornerlabels <- colnames(x$x)
     } else {
-        cornerlabels <- lines.ternary(type=type)
+        cornerlabels <- lines.ternary(type=type,col=col)
     }
     corners <- xyz2xy(matrix(c(1,0,0,1,0,1,0,0,0,0,1,0),ncol=3))
     graphics::lines(corners)
@@ -426,8 +429,34 @@ annotation.distributional <- function(x,height=NULL,...){
     graphics::par(mar=oldpar$mar)
 }
 
-lines.ternary <- function(type='empty'){
-    if (type=='QFL'){
+lines.ternary <- function(type='empty',col='cornflowerblue'){
+    oldcol <- graphics::par('col')
+    graphics::par(col=col)
+    thelabels <- c('x','y','z')
+    if (type=='QFL.descriptive'){
+        xy1 <- xyz2xy(matrix(c(90,0,10,10,0,90),ncol=3))
+        xy2 <- xyz2xy(matrix(c(90,0,0,90,10,10),ncol=3))
+        xy3 <- xyz2xy(matrix(c(10,10,90,0,0,90),ncol=3))
+        xy4 <- xyz2xy(matrix(c(50,10,50,10,0,80),ncol=3))
+        xy5 <- xyz2xy(matrix(c(80,0,10,50,10,50),ncol=3))
+        xy6 <- xyz2xy(matrix(c(10,50,80,0,10,50),ncol=3))
+        graphics::lines(xy1); graphics::lines(xy2);
+        graphics::lines(xy3); graphics::lines(xy4);
+        graphics::lines(xy5); graphics::lines(xy6);
+        graphics::text(xyz2xy(c(50,32,18)),labels=expression(paste('lF',bold('Q'))))
+        graphics::text(xyz2xy(c(50,18,32)),labels=expression(paste('fL',bold('Q'))))
+        graphics::text(xyz2xy(c(32,50,18)),labels=expression(paste('lQ',bold('F'))))
+        graphics::text(xyz2xy(c(32,18,50)),labels=expression(paste('fQ',bold('L'))))
+        graphics::text(xyz2xy(c(18,50,32)),labels=expression(paste('qL',bold('F'))))
+        graphics::text(xyz2xy(c(18,32,50)),labels=expression(paste('qF',bold('L'))))
+        graphics::text(xyz2xy(c(65,30,5)),labels=expression(paste('feldspatho-',bold('quartzose'))),srt=60)
+        graphics::text(xyz2xy(c(30,65,5)),labels=expression(paste('quartzo-',bold('feldspathic'))),srt=60)
+        graphics::text(xyz2xy(c(65,5,30)),labels=expression(paste('litho-',bold('quartzose'))),srt=-60)
+        graphics::text(xyz2xy(c(30,5,65)),labels=expression(paste('quartzo-',bold('lithic'))),srt=-60)
+        graphics::text(xyz2xy(c(5,30,65)),labels=expression(paste('feldspatho-',bold('lithic'))))
+        graphics::text(xyz2xy(c(5,65,30)),labels=expression(paste('litho-',bold('feldspathic'))))
+        thelabels <- c('Q','F','L')
+    } else if (type=='QFL.folk'){
         xy1 <- xyz2xy(matrix(c(90,90,10,0,0,10),ncol=3))
         xy2 <- xyz2xy(matrix(c(75,75,25,0,0,25),ncol=3))
         xy3 <- xyz2xy(matrix(c(0,75,25,25/4,75,25*3/4),ncol=3))
@@ -442,18 +471,18 @@ lines.ternary <- function(type='empty'){
         graphics::text(xyz2xy(c(30,50,30)),labels='lithic arkose',srt=85)
         graphics::text(xyz2xy(c(30,30,50)),labels='feldspathic litharenite',srt=-85)
         graphics::text(xyz2xy(c(30,10,70)),labels='litharenite',srt=-68)
-        return(c('Q','F','L'))
-    }
-    if (type=='QFL.dickinson') {
+        thelabels <- c('Q','F','L')
+    } else if (type=='QFL.dickinson') {
         xy1 <- xyz2xy(matrix(c(97,0,0,85,3,15),ncol=3))
         xy2 <- xyz2xy(matrix(c(25,51.6,0,40,75,8.4),ncol=3))
         graphics::lines(xy1); graphics::lines(xy2)
         graphics::text(xyz2xy(c(20,40,40)),labels='magmatic arc')
         graphics::text(xyz2xy(c(55,15,30)),labels='recycled orogen')
         graphics::text(xyz2xy(c(50,45,5)),labels='continental block',srt=65)
-        return(c('Q','F','L'))
+        thelabels <- c('Q','F','L')
     }
-    return(c('x','y','z'))
+    graphics::par(col=oldcol)
+    return(thelabels)
 }
 
 # X is an object of class 'ternary'

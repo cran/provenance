@@ -40,7 +40,7 @@
 #' @export
 read.distributional <- function(fname,errorfile=NA,method="KS",xlab="age [Ma]",colmap='rainbow') {
     out <- list()
-    out$name <- utils::tail(unlist(strsplit(fname, "/|.csv")),1)
+    out$name <- utils::tail(unlist(strsplit(fname, "\\\\|\\|/|.csv")),1)
     if (method=="SH" & is.na(errorfile)) method <- "KS"
     class(out) <- "distributional"
     out$method <- method
@@ -93,7 +93,7 @@ read.distributional <- function(fname,errorfile=NA,method="KS",xlab="age [Ma]",c
 #' @export
 read.compositional <- function(fname,method=NULL,colmap='rainbow') {
     out <- list()
-    out$name <- utils::tail(unlist(strsplit(fname, "/|.csv")),1)
+    out$name <- utils::tail(unlist(strsplit(fname, "\\\\|\\|/|.csv")),1)
     class(out) <- "compositional"
     out$x <- utils::read.csv(fname,header=TRUE,row.names=1)
     if (is.null(method)){

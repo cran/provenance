@@ -1,13 +1,13 @@
-41482a5b98941443753f8739c978ad9f *DESCRIPTION
+7e82b0cce5af71eb6e472ded9679195e *DESCRIPTION
 ddb1df09f3c3ffd2f26897ea0f6cdbef *NAMESPACE
 4c8a244bc1cd1192ba82278dc6d1d57f *R/botev.R
 e991576ed056a4920237a297ebab328e *R/documentation.R
-beb79b5eb75088cfac45e1eb1d19288c *R/gui.R
+349af9c82487f849f0b9c18b90308359 *R/gui.R
 38c79f9fdbc9d0be3f467216b9953b7a *R/indscal.R
 42a9b965f908b66386d306749ab0813d *R/kde.R
 d8acee6882b5063f76c7112b314397d1 *R/minsorting.R
-be94ef0beefaee1cf1109d05bd510750 *R/plot.R
-931ae6e9a8267b4d44f8478ae1b27255 *R/provenance.R
+63966474ea6e6e52a24839bb3fdd29d3 *R/plot.R
+82e798337eed7e79ed8e62c4549fe31f *R/provenance.R
 277cbd4b125ab43e973cb8ae5dffed94 *R/sircombe.R
 dd0be3517b81ba744258aa244dc248f9 *R/srd.R
 ce281393305c557d2521b6f4ab8589d5 *data/Namib.rda
@@ -54,7 +54,7 @@ d45b7869c8361ca5367535800bfb87e6 *man/plot.PCA.Rd
 1d932a4d60f26d3ce02ae1f71e17be06 *man/plot.compositional.Rd
 ff7dd7e68f31b4d192b741acb04fb42d *man/plot.distributional.Rd
 8feed910a641481d395e95c54cce619b *man/plot.minsorting.Rd
-7ed2dd6c1cdca9e817c71286cdcb8f56 *man/plot.ternary.Rd
+832ebdbe621a493d1bf82b4389094a2c *man/plot.ternary.Rd
 47f41016eb42d27f0485a2f1a9b1573a *man/procrustes.Rd
 0aa31bea28485160a01bc699aa85f998 *man/provenance.Rd
 79754845efc048f9565e83d458bd1c31 *man/read.compositional.Rd

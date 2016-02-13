@@ -5,21 +5,25 @@
 \title{Plot a ternary diagram}
 \usage{
 \method{plot}{ternary}(x, type = "empty", pch = NA, labels = names(x),
-  showpath = FALSE, ...)
+  showpath = FALSE, col = "cornflowerblue", ...)
 }
 \arguments{
 \item{x}{an object of class \code{ternary}}
 
 \item{type}{adds annotations to the ternary diagram, one of either
-\code{empty}, \code{QFL} or \code{QmFLt.dickinson}}
+\code{empty}, \code{QFL.descriptive}, \code{QFL.folk} or
+\code{QmFLt.dickinson}}
 
 \item{pch}{plot character, see \code{?par} for details}
 
 \item{labels}{vector of strings to be added to the plot symbols}
 
 \item{showpath}{if \code{x} has class \code{SRDcorrected}, and
-\code{showpath}==TRUE, the intermediate values of the SRD correction
-will be plotted on the ternary diagram as well as the final composition}
+\code{showpath}==TRUE, the intermediate values of the SRD
+correction will be plotted on the ternary diagram as well as
+the final composition}
+
+\item{col}{colour to be used for the background lines (if applicable)}
 
 \item{...}{optional arguments to the generic \code{points} function}
 }
@@ -29,7 +33,7 @@ Plots triplets of compositional data on a ternary diagram
 \examples{
 data(Namib)
 tern <- ternary(Namib$PT,'Q',c('KF','P'),c('Lm','Lv','Ls'))
-plot(tern,type='QFL.dickinson')
+plot(tern,type='QFL.descriptive')
 }
 \seealso{
 ternary
