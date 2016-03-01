@@ -60,27 +60,27 @@ gui.samplesize <- function(sigdig=3){
     response <- readline()
     if (response == '1'){
         n <- readline("enter the number of grains [e.g., 117]: ")
-        f <- readline(paste0("enter a number between 0 and 100% indicating ",
+        f <- readline(paste0("enter a number between 0 and 100% indicating\n",
                              "the size of the smallest fraction of interest [e.g., 5]: "))
         p <- get.p(as.numeric(n),as.numeric(f)/100)
-        message("Result: the likelihood that all fractions greater than ", f , "%\n",
+        message("\nResult: the likelihood that all fractions greater than ", f , "%\n",
                 "of the population are missed in a sample with ", n ," grains is ",
-                "p = ",signif(100*p,sigdig) , "%")
+                "p = ",signif(100*p,sigdig) , "%\n")
     } else if (response == '2'){
         n <- readline("enter the number of grains [e.g., 117]: ")
-        p <- readline(paste0("enter a number between 0 and 100% indicating ",
+        p <- readline(paste0("enter a number between 0 and 100% indicating\n",
                              "the desired level of confidence [e.g., 95]: "))
         f <- get.f(as.numeric(n),as.numeric(p)/100)
-        message("Result: the largest fraction of which a ", n , "-grain sample\n",
-                "has not missed with ", p , "% confidence is f = ", signif(100*f,3),"%")
+        message("\nResult: the largest fraction of which a ", n , "-grain sample\n",
+                "has not missed with ", p , "% confidence is f = ", signif(100*f,3),"%\n")
     } else if (response == '3'){
-        f <- readline(paste0("enter a number between 0 and 100% indicating ",
+        f <- readline(paste0("enter a number between 0 and 100% indicating\n",
                              "the size of the smallest fraction of interest [e.g., 5]: "))
-        p <- readline(paste0("enter a number between 0 and 100% indicating ",
+        p <- readline(paste0("enter a number between 0 and 100% indicating\n",
                              "the desired level of confidence [e.g., 95]: "))
         n <- get.n(as.numeric(p)/100,as.numeric(f)/100)
-        message("Result: the minimum sample size which guarantees with ",p,"% certainty\n",
-                "not to have missed any fraction greater than ",f,"% of the population is n = ",n)
+        message("\nResult: the minimum sample size which guarantees with ",p,"% certainty not\n",
+                "to have missed any fraction greater than ",f,"% of the population is n = ",n,"\n")
     } else {
         message('Incorrect input.')
     }
@@ -122,7 +122,7 @@ gui.plot.single <- function(){
         dat <- gui.open.compositional()
         numcol <- as.numeric(readline("Number of columns in the plot? "))
         if (is.na(numcol)) numcol <- 1
-        summaryplot(dat$x,ncol=numcol)
+        summaryplot(dat,ncol=numcol)
     } else if (response1 == '3'){
         dat <- gui.open.distributional()
         graphics::plot(dat,CAD=TRUE)

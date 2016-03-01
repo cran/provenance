@@ -12,7 +12,7 @@
 
 \item{type}{adds annotations to the ternary diagram, one of either
 \code{empty}, \code{QFL.descriptive}, \code{QFL.folk} or
-\code{QmFLt.dickinson}}
+\code{QFL.dickinson}}
 
 \item{pch}{plot character, see \code{?par} for details}
 

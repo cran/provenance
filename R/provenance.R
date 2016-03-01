@@ -40,7 +40,7 @@
 #' @export
 read.distributional <- function(fname,errorfile=NA,method="KS",xlab="age [Ma]",colmap='rainbow') {
     out <- list()
-    out$name <- utils::tail(unlist(strsplit(fname, "\\\\|\\|/|.csv")),1)
+    out$name <- basename(substr(fname,1,nchar(fname)-4))
     if (method=="SH" & is.na(errorfile)) method <- "KS"
     class(out) <- "distributional"
     out$method <- method
@@ -93,7 +93,7 @@ read.distributional <- function(fname,errorfile=NA,method="KS",xlab="age [Ma]",c
 #' @export
 read.compositional <- function(fname,method=NULL,colmap='rainbow') {
     out <- list()
-    out$name <- utils::tail(unlist(strsplit(fname, "\\\\|\\|/|.csv")),1)
+    out$name <- basename(substr(fname,1,nchar(fname)-4))
     class(out) <- "compositional"
     out$x <- utils::read.csv(fname,header=TRUE,row.names=1)
     if (is.null(method)){
@@ -558,7 +558,8 @@ procrustes <- function(...) {
     m <- length(disslist)
     X <- array(dim=c(n,2,m))
     for (i in 1:m){
-        md <- MASS::isoMDS(disslist[[i]],k=2)
+        md <- MDS(disslist[[i]],FALSE)
+        if (md$stress < 0.05) md <- MDS(disslist[[i]],TRUE)
         X[,,i] <- md$points
     }
     result <- GPA(X)
