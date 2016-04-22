@@ -20,16 +20,15 @@ pilotdensity <- function(dat,bw){
 }
 
 # adaptive KDE algorithm of Abramson (1982) as summarised by Jahn (2007)
-Abramson <- function(dat,from,to,bw,...){
-    n <- length(dat)
-    lambda <- rep(0,n,length.out=n)
+Abramson <- function(dat,from,to,bw,n=512,...){
+    nn <- length(dat)
     pdens <- pilotdensity(dat,bw)
     G <- getG(pdens)
-    dens <- rep(0,512)
-    for (i in 1:n){
+    lambda <- 0
+    dens <- rep(0,n)
+    for (i in 1:nn){
         lambda = sqrt(G/pdens[i])
-        dens <- dens + stats::density(dat[i],bw*lambda,
-                       from=from,to=to,...)$y
+        dens <- dens + stats::density(dat[i],bw*lambda,from=from,to=to,n=n,...)$y
     }
     return(dens)
 }
@@ -49,6 +48,7 @@ Abramson <- function(dat,from,to,bw,...){
 #' @param adaptive boolean flag controlling if the adaptive KDE
 #' modifier of Abramson (1982) is used
 #' @param log transform the ages to a log scale if TRUE
+#' @param n horizontal resolution of the density estimate
 #' @param ... optional arguments to be passed on to \code{density}
 #' @return an object of class \code{KDE}, i.e. a list
 #' containing the following items:
@@ -67,7 +67,7 @@ Abramson <- function(dat,from,to,bw,...){
 #' plot(dens)
 #' @seealso KDEs
 #' @export
-KDE <- function(x,from=NA,to=NA,bw=NA,adaptive=TRUE,log=FALSE,...){
+KDE <- function(x,from=NA,to=NA,bw=NA,adaptive=TRUE,log=FALSE,n=512,...){
     out <- list()
     class(out) <- "KDE"
     out$name <- deparse(substitute(x))
@@ -85,15 +85,15 @@ KDE <- function(x,from=NA,to=NA,bw=NA,adaptive=TRUE,log=FALSE,...){
     } else {
         d <- x
     }
-    out$x <- seq(from=from,to=to,length.out=512)
+    out$x <- seq(from=from,to=to,length.out=n)
     if (is.na(bw)){ bw <- botev(d) }
     if (adaptive){
-        out$y <- Abramson(d,from,to,bw,...)
+        out$y <- Abramson(d,from=from,to=to,bw=bw,n=n,...)
     } else {
-        out$y <- stats::density(d,bw,from=from,to=to,...)$y
+        out$y <- stats::density(d,bw,from=from,to=to,n=n,...)$y
     }
     if (log) out$x <- 10^(out$x)
-    out$y <- out$y/(sum(out$y)*(to-from)/512)
+    out$y <- out$y/(sum(out$y)*(to-from)/n)
     out$bw <- bw
     out$ages <- x
     return(out)
@@ -120,6 +120,7 @@ KDE <- function(x,from=NA,to=NA,bw=NA,adaptive=TRUE,log=FALSE,...){
 #' should all integrate to the same value.
 #' @param log boolean flag indicating whether the data should by
 #' plotted on a logarithmic scale.
+#' @param n horizontal resolution of the density estimates
 #' @param ... optional parameters to be passed on to \code{density}
 #' @return an object of class \code{KDEs}, i.e. a list containing the
 #' following items:
@@ -142,7 +143,7 @@ KDE <- function(x,from=NA,to=NA,bw=NA,adaptive=TRUE,log=FALSE,...){
 #' @seealso KDE
 #' @export
 KDEs <- function(x,from=NA,to=NA,bw=NA,samebandwidth=TRUE,
-                 adaptive=TRUE,pch=NA,normalise=FALSE,log=FALSE,...){
+                 adaptive=TRUE,pch=NA,normalise=FALSE,log=FALSE,n=512,...){
     if (is.na(from) | is.na(to)) {
         mM <- setmM(unlist(x$x),from,to,log)
         from <- mM$m
@@ -150,11 +151,10 @@ KDEs <- function(x,from=NA,to=NA,bw=NA,samebandwidth=TRUE,
     }
     snames <- names(x$x)
     thekdes <- list()
-    n <- list()
     themax <- -1
     if (is.na(bw) & samebandwidth) bw <- commonbandwidth(x)
     for (name in snames){
-        thekdes[[name]] <- KDE(x$x[[name]],from,to,bw,adaptive,log,...)
+        thekdes[[name]] <- KDE(x$x[[name]],from=from,to=to,bw=bw,adaptive=adaptive,log=log,n=n,...)
         if (normalise){
             maxval <- max(thekdes[[name]]$y)
             if (themax < maxval) {themax <- maxval}

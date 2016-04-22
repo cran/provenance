@@ -5,7 +5,8 @@
 \title{Generate an object of class \code{KDEs}}
 \usage{
 KDEs(x, from = NA, to = NA, bw = NA, samebandwidth = TRUE,
-  adaptive = TRUE, pch = NA, normalise = FALSE, log = FALSE, ...)
+  adaptive = TRUE, pch = NA, normalise = FALSE, log = FALSE, n = 512,
+  ...)
 }
 \arguments{
 \item{x}{an object of class \code{distributional}}
@@ -32,6 +33,8 @@ should all integrate to the same value.}
 
 \item{log}{boolean flag indicating whether the data should by
 plotted on a logarithmic scale.}
+
+\item{n}{horizontal resolution of the density estimates}
 
 \item{...}{optional parameters to be passed on to \code{density}}
 }

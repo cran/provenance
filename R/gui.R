@@ -78,7 +78,7 @@ gui.samplesize <- function(sigdig=3){
                              "the size of the smallest fraction of interest [e.g., 5]: "))
         p <- readline(paste0("enter a number between 0 and 100% indicating\n",
                              "the desired level of confidence [e.g., 95]: "))
-        n <- get.n(as.numeric(p)/100,as.numeric(f)/100)
+        n <- get.n((100-as.numeric(p))/100,as.numeric(f)/100)
         message("\nResult: the minimum sample size which guarantees with ",p,"% certainty not\n",
                 "to have missed any fraction greater than ",f,"% of the population is n = ",n,"\n")
     } else {
@@ -269,15 +269,11 @@ gui.mds <- function(){
                 "Looks like you\'re overfitting your data!")
     }
     if (!dat$method %in% c("bray","SH")){
-        message("Do you want to switch to classical scaling?")
         if (mymds$stress < 0.05){
+            message("Do you want to switch to classical scaling?")
             response <- readline("[Y or n]: ")
             if (response %in% c("n","N")) classical <- FALSE
             else classical <- TRUE
-        } else {
-            response <- readline("[y or N]: ")
-            if (response %in% c("y","Y")) classical <- TRUE
-            else classical <- FALSE
         }
         if (classical){
             mymds <- MDS(dat,classical,method=method)
@@ -285,7 +281,8 @@ gui.mds <- function(){
     }
     thennlines=FALSE
     thepch=NA
-    thecex=NA
+    thecex=1
+    thepos=NULL
     thexlab=""
     theylab=""
     thexaxt='n'
@@ -295,7 +292,8 @@ gui.mds <- function(){
                 "1 - Add nearest neighbour lines\n",
                 "2 - Change plot character\n",
                 "3 - Change size of plot character\n",
-                "4 - Add X and Y axis ticks\n",
+                "4 - Change position of text label relative to plot character\n",
+                "5 - Add X and Y axis ticks\n",
                 "c - Continue")
         response1 <- readline()
         if (response1 == "1"){
@@ -308,6 +306,9 @@ gui.mds <- function(){
             thecex <- as.numeric(readline(
                 "Magnification of the default plot character [1 = normal]: "))
         } else if (response1 == "4"){
+            thepos <- as.numeric(readline(
+                "Position of the text label [1 = below, 2 = left, 3 = above, 4 = right]"))
+        } else if (response1 == "5"){
             thexlab <- "X"
             theylab <- "Y"
             thexaxt <- 's'
@@ -316,7 +317,7 @@ gui.mds <- function(){
             break
         }
     }
-    graphics::plot(mymds,nnlines=thennlines,pch=thepch,cex=thecex,
+    graphics::plot(mymds,nnlines=thennlines,pch=thepch,pos=thepos,cex=thecex,
                    xlab=thexlab,ylab=theylab,xaxt=thexaxt,yaxt=theyaxt)
 }
 

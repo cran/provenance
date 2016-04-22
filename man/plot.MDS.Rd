@@ -4,17 +4,25 @@
 \alias{plot.MDS}
 \title{Plot an MDS configuration}
 \usage{
-\method{plot}{MDS}(x, nnlines = FALSE, pch = NA, cex = NA, xlab = "",
-  ylab = "", xaxt = "n", yaxt = "n", ...)
+\method{plot}{MDS}(x, nnlines = FALSE, pch = NA, pos = NULL, cex = 1,
+  col = "black", bg = "white", xlab = "", ylab = "", xaxt = "n",
+  yaxt = "n", ...)
 }
 \arguments{
 \item{x}{an object of class \code{MDS}}
 
 \item{nnlines}{if TRUE, draws nearest neighbour lines}
 
-\item{pch}{plot character (see ?plot for details)}
+\item{pch}{plot character (see ?plot for details). May be a vector.}
 
-\item{cex}{magnification of the plot character (see ?par for details)}
+\item{pos}{position of the sample labels relative to the plot
+symbols if pch != NA}
+
+\item{cex}{relative size of plot symbols (see ?par for details)}
+
+\item{col}{plot colour (may be a vector)}
+
+\item{bg}{background colour (may be a vector)}
 
 \item{xlab}{a string with the label of the x axis}
 
@@ -30,6 +38,15 @@
 Plots the coordinates of a multidimensional scaling analysis as an
 X-Y scatter plot or 'map' and, if x$classical = FALSE, a Shepard
 plot.
+}
+\examples{
+data(Namib)
+mds <- MDS(Namib$DZ)
+coast <- c('N1','N2','N3','N10','N11','N12','T8','T13')
+snames <- names(Namib$DZ)
+bgcol <- rep('yellow',length(snames))
+bgcol[which(snames \%in\% coast)] <- 'red'
+plot(mds,pch=21,bg=bgcol)
 }
 \seealso{
 MDS

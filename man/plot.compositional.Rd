@@ -16,9 +16,11 @@ pie-chart should be labeled}
 
 \item{colmap}{an optional string with the name of one of R's
 built-in colour palettes (e.g., heat.colors, terrain.colors,
-topo.colors, cm.colors), which are to be used for plotting the data.}
+topo.colors, cm.colors), which are to be used for plotting the
+data.}
 
-\item{...}{optional parameters to be passed on to the graphics object}
+\item{...}{optional parameters to be passed on to the graphics
+object}
 }
 \description{
 Plots an object of class \code{compositional} as a pie chart

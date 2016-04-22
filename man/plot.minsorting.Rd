@@ -16,11 +16,12 @@ probability curve.}
 \item{components}{string or list of strings with the names of a
 subcomposition that needs plotting}
 
-\item{...}{optional parameters (see ?par for details)}
+\item{...}{optional parameters to be passed on to graphics::matplot
+(see ?par for details)}
 }
 \description{
-Plot the grain size distributions of the different
-minerals under consideration
+Plot the grain size distributions of the different minerals under
+consideration
 }
 \examples{
 data(endmembers,densities)

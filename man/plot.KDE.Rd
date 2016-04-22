@@ -9,14 +9,15 @@
 \arguments{
 \item{x}{an object of class \code{KDE}}
 
-\item{pch}{the symbol used to show the samples. Set \code{pch = NA}
-to turn them off}
+\item{pch}{the symbol used to show the samples. May be a vector.
+Set \code{pch = NA} to turn them off.}
 
 \item{xlab}{the label of the x-axis}
 
 \item{ylab}{the label of the y-axis}
 
-\item{...}{optional parameters to be passed on to the graphics object}
+\item{...}{optional parameters to be passed on to the graphics
+object}
 }
 \description{
 Plots an object of class \code{KDE}
@@ -24,7 +25,7 @@ Plots an object of class \code{KDE}
 \examples{
 data(Namib)
 samp <- Namib$DZ$x[['N1']]
-dens <- KDE(samp,0,3000)
+dens <- KDE(samp,from=0,to=3000)
 plot(dens)
 }
 \seealso{
