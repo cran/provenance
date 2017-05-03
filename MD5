@@ -1,4 +1,4 @@
-4a814205bfcc80839496ba088397c4cb *DESCRIPTION
+7d2665785c5b39c3c4d496585cef0c16 *DESCRIPTION
 ddb1df09f3c3ffd2f26897ea0f6cdbef *NAMESPACE
 4c8a244bc1cd1192ba82278dc6d1d57f *R/botev.R
 e991576ed056a4920237a297ebab328e *R/documentation.R
@@ -6,13 +6,14 @@ e991576ed056a4920237a297ebab328e *R/documentation.R
 38c79f9fdbc9d0be3f467216b9953b7a *R/indscal.R
 712cb0f5ca4db5421c6a6a0d00f37bb1 *R/kde.R
 d8acee6882b5063f76c7112b314397d1 *R/minsorting.R
-7184190af81e742b8c4d3cd48e07660f *R/plot.R
-e91e5a7d475ef6abb9371c34fcc17bf1 *R/provenance.R
+5c230fcf4d53ed8462c80e557a777f96 *R/plot.R
+a41ea1ee305b9538629168ac2da7dbdd *R/provenance.R
 277cbd4b125ab43e973cb8ae5dffed94 *R/sircombe.R
 dd0be3517b81ba744258aa244dc248f9 *R/srd.R
 ce281393305c557d2521b6f4ab8589d5 *data/Namib.rda
 09459578a42879922ada496cbd1269f8 *data/densities.rda
 5286ec9747762ede5e54d1c47ba0de80 *data/endmembers.rda
+65eb9daf6c95c3573032f15455a41a08 *inst/CITATION
 7261d80b7d411c352b81ffa8af501b66 *inst/DZ.csv
 c5b3f63e8de5992e9b460fc80c2001cf *inst/DZerr.csv
 f8e35b58c4853f454596e140b2d6e7df *inst/HM.csv
@@ -27,7 +28,7 @@ cd0ea6ba3fe6aaeba22f0017e04eede7 *man/CLR.Rd
 78115858052e7fca0ba48eba86680b35 *man/KDE.Rd
 76d13e7b14c2b672b8b112960eebb800 *man/KDEs.Rd
 9f0959b7faa2a4342ad2d61744df05c3 *man/KS.diss.Rd
-bfbc363178b0e6892e3c32b6f4d4bb43 *man/MDS.Rd
+a69d11d81df8be4b5301a729279252d2 *man/MDS.Rd
 c8375bdfe6c091136b5249d51213af66 *man/Namib.Rd
 ff5a77c3e6e2b3ea8351e38275d3b495 *man/PCA.Rd
 e848116886013f5c030ede793d8e9dd1 *man/SH.diss.Rd
@@ -49,7 +50,7 @@ be855244d54da33acf62ff370c2ec3a4 *man/botev.Rd
 c927918e35db1b9c8d6ce4ad38660eb5 *man/plot.GPA.Rd
 ff5788eeb4513b8e8d3b432400671f15 *man/plot.INDSCAL.Rd
 24142d5205e0957115885cd8a68403d4 *man/plot.KDE.Rd
-9ea410c071a97b3d16289b1e08a304cb *man/plot.MDS.Rd
+3e79ffb02544c6687fac63d33295df36 *man/plot.MDS.Rd
 d45b7869c8361ca5367535800bfb87e6 *man/plot.PCA.Rd
 1c098d7086e5c2a4c8e522fb787d568a *man/plot.compositional.Rd
 d53fbf74efb943c494094ee1d15dd96c *man/plot.distributional.Rd
