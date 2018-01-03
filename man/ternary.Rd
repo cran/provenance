@@ -4,22 +4,22 @@
 \alias{ternary}
 \title{Define a ternary composition}
 \usage{
-ternary(X, x = NULL, y = NULL, z = NULL)
+ternary(X, x = 1, y = 2, z = 3)
 }
 \arguments{
-\item{X}{an object of class \code{compositional}}
+\item{X}{an object of class \code{compositional} OR a matrix or
+data frame with numerical data}
 
-\item{x}{string or a vector of strings indicating the variables making up
-the first subcomposition of the ternary system. If omitted, the first
-component of X is used instead.}
+\item{x}{string or a vector of strings indicating the variables
+making up the first subcomposition of the ternary system. If
+omitted, the first component of X is used instead.}
 
 \item{y}{second (set of) variables}
 
 \item{z}{third (set of) variables}
 }
 \value{
-an object of class \code{ternary}, i.e. a
-list containing:
+an object of class \code{ternary}, i.e. a list containing:
 
 x: a three column matrix (or vector) of ternary compositions.
 

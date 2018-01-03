@@ -442,6 +442,25 @@ CLR <- function(x){
     return(out)
 }
 
+ALR <- function(x,inverse=FALSE){
+    if (!methods::is(x,'compositional')){stop('CLR(x): x is not of class compositional.')}
+    out <- x
+    nr <- nrow(x$x)
+    nc <- ncol(x$x)
+    if (inverse){
+        out$x <- matrix(0,nr,nc+1)
+        den <- 1+apply(exp(x$x),MARGIN=1,FUN='sum')
+        for (i in 1:nc)
+            out$x[,i] <- exp(x$x[,i])/den
+        out$x[,nc+1] <- 1/den
+    } else {
+        out$x <- matrix(0,nr,nc-1)
+        for (i in 1:(nc-1))
+            out$x[,i] <- log(x$x[,i]) - log(x$x[,nc])
+    }
+    return(out)
+}
+
 #' Principal Component Analysis
 #'
 #' Performs PCA of compositional data using a centred logratio distance
@@ -814,35 +833,45 @@ ndim <- function(X){
 }
 
 sumcols <- function(X,x){
-    if (length(x)>1 & ndim(X[,x])>0) # >1 class, >1 sample
+    if (ndim(X)==0)
+        out <- X[x]
+    else if (length(x)>1 & ndim(X[,x])>0) # >1 class, >1 sample
         out <- apply(X[,x],1,sum)
-    if (length(x)>1 & ndim(X[,x])==0) # >1 class, 1 sample
+    else if (length(x)>1 & ndim(X[,x])==0) # >1 class, 1 sample
         out <- sum(X[,x])
-    if (length(x)==1 & ndim(X[,x])>0) # 1 class, >1 sample
+    else if (length(x)==1 & ndim(X[,x])>0) # 1 class, >1 sample
         out <- sum(X[,x])
-    if (length(x)==1 & ndim(X[,x])==0) # 1 class, 1 sample
+    else if (length(x)==1 & ndim(X[,x])==0) # 1 class, 1 sample
         out <- X[,x]
-    names(out) <- rownames(X)
     return(out)
 }
 
-# X is a vector of strings
-sumlabels <- function(X){
-    out <- X[1]
-    n <- length(X)
+# X is a matrix or vector
+# x is an index or a (vector of) string(s)
+sumlabels <- function(X,x){
+    if (is.numeric(X) & is.numeric(x) & !is.null(names(X))){
+        i <- names(X)[x]
+    } else if (is.numeric(x) & !is.null(colnames(X))){
+        i <- colnames(X)[x]
+    } else {
+        i <- x
+    }
+    out <- i[1]
+    n <- length(i)
     if (n==1) return(out)
-    for (i in 2:length(X)){
-        out <- paste(out,X[i],sep='+')
+    for (ii in 2:length(i)){
+        out <- paste(out,i[ii],sep='+')
     }
     return(out)
 }
 
 #' Group components of a composition
 #'
-#' Adds several components of a composition together into a single component
+#' Adds several components of a composition together into a single
+#' component
 #' @param X a compositional dataset
-#' @param ... a series of new labels assigned to strings or vectors of strings
-#' denoting the components that need amalgamating
+#' @param ... a series of new labels assigned to strings or vectors of
+#'     strings denoting the components that need amalgamating
 #' @return an object of the same class as X with fewer components
 #' @examples
 #' data(Namib)
@@ -918,10 +947,12 @@ combine <- function(X,...){
     return(out)    
 }
 
-ternaryclosure <- function(X,x,y,z){ 
-    xlab <- sumlabels(x)
-    ylab <- sumlabels(y)
-    zlab <- sumlabels(z)
+# X is a matrix or vector
+# x, y, z is an index or (vector) of string(s)
+ternaryclosure <- function(X,x=1,y=2,z=3){
+    xlab <- sumlabels(X,x)
+    ylab <- sumlabels(X,y)
+    zlab <- sumlabels(X,z)
     out <- cbind(sumcols(X,x),sumcols(X,y),sumcols(X,z))
     den <- rowSums(out)
     out <- apply(out,2,'/',den)
@@ -936,14 +967,14 @@ ternaryclosure <- function(X,x,y,z){
 #' Define a ternary composition
 #'
 #' Create an object of class \code{ternary}
-#' @param X an object of class \code{compositional}
-#' @param x string or a vector of strings indicating the variables making up
-#' the first subcomposition of the ternary system. If omitted, the first
-#' component of X is used instead.
+#' @param X an object of class \code{compositional} OR a matrix or
+#'     data frame with numerical data
+#' @param x string or a vector of strings indicating the variables
+#'     making up the first subcomposition of the ternary system. If
+#'     omitted, the first component of X is used instead.
 #' @param y second (set of) variables
 #' @param z third (set of) variables
-#' @return an object of class \code{ternary}, i.e. a
-#' list containing:
+#' @return an object of class \code{ternary}, i.e. a list containing:
 #'
 #' x: a three column matrix (or vector) of ternary compositions.
 #'
@@ -958,15 +989,13 @@ ternaryclosure <- function(X,x,y,z){
 #' tern <- ternary(Namib$PT,c('Q'),c('KF','P'),c('Lm','Lv','Ls'))
 #' plot(tern,type="QFL")
 #' @export
-ternary <- function(X,x=NULL,y=NULL,z=NULL){
-    if (!methods::is(X,"compositional")) stop("X is not of class compositional")
+ternary <- function(X,x=1,y=2,z=3){
+    if (methods::is(X,"compositional")) dat <- X$x
+    else dat <- X
     out <- list()
     class(out) <- append("ternary","compositional")
-    if (is.null(x)) x <- colnames(X$x)[1]
-    if (is.null(y)) y <- colnames(X$x)[2]
-    if (is.null(z)) z <- colnames(X$x)[3]
     arg <- deparse(substitute(x))
-    out$x <- ternaryclosure(X$x,x,y,z)
+    out$x <- ternaryclosure(dat,x,y,z)
     if (methods::is(X,"SRDcorrected")){
         out$restoration <- list()
         snames <- names(X$restoration)

@@ -1,16 +1,16 @@
-1e17259be411011dd54c6649e34bed1b *DESCRIPTION
-8b813a64d9c0fd362eb53e15aaf2ca46 *NAMESPACE
+c3688d5d0a104127994256b2a7695ef2 *DESCRIPTION
+65907dd6c8a267a88a922bf4e1f6d864 *NAMESPACE
 4c8a244bc1cd1192ba82278dc6d1d57f *R/botev.R
 e991576ed056a4920237a297ebab328e *R/documentation.R
 d7195e607a65bfbbb67760c804e0aaae *R/gui.R
 38c79f9fdbc9d0be3f467216b9953b7a *R/indscal.R
 712cb0f5ca4db5421c6a6a0d00f37bb1 *R/kde.R
 d8acee6882b5063f76c7112b314397d1 *R/minsorting.R
-5c230fcf4d53ed8462c80e557a777f96 *R/plot.R
+a57f663545509bb9fac31a733d7a2c58 *R/plot.R
 02f21e6221cc965879d2c67bfd3e964a *R/provenance.R
 277cbd4b125ab43e973cb8ae5dffed94 *R/sircombe.R
 dd0be3517b81ba744258aa244dc248f9 *R/srd.R
-e5f3bce49a100cc0eeb24d66ef6adc78 *R/toolbox.R
+a9f82442039c93f1acb96da37c7c5eb0 *R/toolbox.R
 ce281393305c557d2521b6f4ab8589d5 *data/Namib.rda
 09459578a42879922ada496cbd1269f8 *data/densities.rda
 5286ec9747762ede5e54d1c47ba0de80 *data/endmembers.rda
@@ -34,7 +34,7 @@ f03d5e752b0e5c7b85345b0c9f31628d *inst/densities.csv
 08158a0a32d589f5e5d3cafdf94e9c85 *man/Namib.Rd
 630587d12b50596deeb2482cfbe69aef *man/PCA.Rd
 c9b0ce593e4c55f4f2c5b2916d3fba58 *man/SH.diss.Rd
-8f4fc53daed612cfa3ded41540492505 *man/amalgamate.Rd
+7e6462f8436408a632d71aaecbc7ca53 *man/amalgamate.Rd
 d4e177e71a0d1fbb205b2015d5e6ebf4 *man/as.acomp.Rd
 b2bb01bdb4e4cc311b05165f3ea1906d *man/as.compositional.Rd
 7a63f320dc078b3bd885a2044099331d *man/as.data.frame.compositional.Rd
@@ -57,7 +57,8 @@ dccdb344c59a6674f3f84cb537a1e38d *man/plot.MDS.Rd
 b99e360843fc3ad047fa78797d22c3f4 *man/plot.compositional.Rd
 e1b8d18b58615078df883c4632e12739 *man/plot.distributional.Rd
 9a3c2d91c8bbff0c71b7cd652fa0793a *man/plot.minsorting.Rd
-561e98a1cc27bb963243553927d9aa38 *man/plot.ternary.Rd
+7db3646e87ff9baddb793134a745f20d *man/plot.ternary.Rd
+f14b28f0ae47a4ed9691b86aef35ba13 *man/points.ternary.Rd
 6466f023c9ae38e78e4737d963f29747 *man/procrustes.Rd
 cd9edca8c424032809bbacbd024a0b3b *man/provenance.Rd
 2fd753785dd8c172a7eefb515c6298fe *man/read.compositional.Rd
@@ -67,4 +68,4 @@ fc64d984fa4d63034291da99bfe911dc *man/restore.Rd
 8da6ad3581c6971c75a5c6f946bca19a *man/subset.compositional.Rd
 00d6ca5ab2c58233d079faa495414d1a *man/subset.distributional.Rd
 819b7a59e23545027029838e20a02eb0 *man/summaryplot.Rd
-a25238b453b335480f90724c63de2165 *man/ternary.Rd
+87b9e8f284f2059f26f6cf6dc99325d9 *man/ternary.Rd

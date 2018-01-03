@@ -312,11 +312,11 @@ summaryplot <- function(...,ncol=1){
     }
     graphics::par(oldpar)
 }
-
 #' Plot a ternary diagram
 #'
 #' Plots triplets of compositional data on a ternary diagram
-#' @param x an object of class \code{ternary}
+#' @param x an object of class \code{ternary}, or a three-column data
+#'     frame or matrix
 #' @param type adds annotations to the ternary diagram, one of either
 #'     \code{empty}, \code{QFL.descriptive}, \code{QFL.folk} or
 #'     \code{QFL.dickinson}
@@ -332,6 +332,13 @@ summaryplot <- function(...,ncol=1){
 #' @param col colour to be used for the background lines (if
 #'     applicable)
 #' @param bg background colour for the plot symbols (may be a vector)
+#' @param ellipse plot a logistic \eqn{100(1-alpha)\%} confidence
+#'     region around the data (\code{population=TRUE}) or around its
+#'     mean (\code{population=FALSE})?
+#' @param alpha the confidence level (\eqn{0\leq\alpha\leq1}) for the
+#'     confidence region.
+#' @param population draw the confidence region around the entire
+#'     population, or around its mean?
 #' @param ... optional arguments to the generic \code{points} function
 #' @examples
 #' data(Namib)
@@ -340,8 +347,10 @@ summaryplot <- function(...,ncol=1){
 #' @seealso ternary
 #' @method plot ternary
 #' @export
-plot.ternary <- function(x,type='empty',pch=NA,pos=NULL,labels=names(x),
-                         showpath=FALSE,bg=NA,col='cornflowerblue',...){
+plot.ternary <- function(x,type='empty',pch=NA,pos=NULL,
+                         labels=names(x),showpath=FALSE,bg=NA,
+                         col='cornflowerblue',ellipse=FALSE,
+                         alpha=0.05,population=TRUE,...){
     graphics::plot(c(0,1),c(0,1),type='n',xaxt='n',yaxt='n',
                    xlab='',ylab='',asp=1,bty='n',...)
     if (type=='empty') {
@@ -358,6 +367,55 @@ plot.ternary <- function(x,type='empty',pch=NA,pos=NULL,labels=names(x),
     if (!is.na(pch)) graphics::points(xy,pch=pch,bg=bg,...)
     if (!is.null(labels)){ graphics::text(xy,labels=labels,pos=pos) }
     if (showpath & methods::is(x,'SRDcorrected')) plotpath(x)
+    if (ellipse) ternary.ellipse(x,alpha=alpha,population=population)
+}
+#' Add points on a ternary diagram
+#' 
+#' @param x an object of class \code{ternary}, or a three-column data
+#'     frame or matrix
+#' @param ... optional arguments to the generic \code{points} function
+#' @examples
+#' tern <- ternary(Namib$PT,'Q',c('KF','P'),c('Lm','Lv','Ls'))
+#' plot(tern,pch=21,bg='red',labels=NULL)
+#' # add the geometric mean composition as a yellow square:
+#' gmean <- ternary(exp(colMeans(log(tern$x))))
+#' points(gmean,pch=22,bg='yellow')
+#' @method points ternary
+#' @export
+points.ternary <- function(x,...){
+    xy <- xyz2xy(x$x)
+    graphics::points(xy,...)
+}
+# add a 100(1-alpha)% confidence ellipse
+# to an existing ternary diagram
+ternary.ellipse <- function(x,alpha=0.05,population=TRUE,...){
+    uv <- ALR(x)
+    u <- subset(uv$x,select=1)
+    v <- subset(uv$x,select=2)
+    n <- length(u)
+    m <- 2
+    df1 <- m
+    df2 <- n-m
+    if (population) k <- n+1
+    else k <- 1
+    hk <- k*(n-1)*stats::qf(1-alpha,df1,df2)/(n*(n-m))
+    S <- stats::cov(uv$x)
+    VW2VT <- svd(S)
+    V <- VW2VT$u
+    W2 <- diag(VW2VT$d)
+    w1 <- sqrt(VW2VT$d[1])
+    w2 <- sqrt(VW2VT$d[2])
+    YbarY <- rbind(mean(u)-u,mean(v)-v)
+    res <- 100
+    g1 <- w1*sqrt(hk)*cos(seq(from=0,to=2*pi,length.out=res))
+    g2 <- w2*sqrt(hk)*sin(seq(from=0,to=2*pi,length.out=res))
+    G <- rbind(g1,g2)
+    ell <- list()
+    class(ell) <- 'compositional'
+    ell$x <- t(V%*%G + rbind(rep(mean(u),res),rep(mean(v),res)))
+    XYZ <- ALR(ell,inverse=TRUE)
+    xy <- xyz2xy(XYZ$x)
+    graphics::lines(xy,...)
 }
 
 #' Plot inferred grain size distributions
