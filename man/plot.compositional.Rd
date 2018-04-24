@@ -27,5 +27,5 @@ Plots an object of class \code{compositional} as a pie chart
 }
 \examples{
 data(Namib)
-plot(Namib$HM,'N1',colmap='heat.colors')
+plot(Namib$Major,'N1',colmap='heat.colors')
 }

@@ -26,17 +26,36 @@ plot.KDE <- function(x,pch='|',xlab="age [Ma]",ylab="",...){
     graphics::text(utils::tail(x$x,n=1),.9*max(x$y),paste0("n=",length(x$ages)),pos=2)
 }
 
-# Plot multiple KDEs. Used by summaryplot function
-plot.KDEs <- function(x,sname,annotate=TRUE,...){
-    if (x$themax>0){ # normalise
-        M <- x$themax
+#' Plot one or more kernel density estimates
+#'
+#' Plots an object of class \code{KDEs}
+#' @param x an object of class \code{KDEs}
+#' @param sname optional sample name. If \code{sname=NA}, all samples
+#'     are shown on a summary plot
+#' @param annotate add a time axis?
+#' @param ... optional parameters to be passed on to the
+#'     \code{summaryplot} function
+#' @examples
+#' data(Namib)
+#' kdes <- KDEs(Namib$DZ)
+#' plot(kdes,ncol=2)
+#' @seealso KDEs summaryplot
+#' @method plot KDEs
+#' @export
+plot.KDEs <- function(x,sname=NA,annotate=TRUE,...){
+    if (is.na(sname)) {
+        summaryplot(x,...)
     } else {
-        M <- max(x$kdes[[sname]]$y)
-    }
-    if (annotate){
-        plot.KDE(x$kdes[[sname]],pch=NA,ylim=c(0,M),...)
-    } else {
-        plot.KDE(x$kdes[[sname]],pch=x$pch,axes=FALSE,xlab="",ylab="",ylim=c(0,M),...)
+        if (x$themax>0){ # normalise
+            M <- x$themax
+        } else {
+            M <- max(x$kdes[[sname]]$y)
+        }
+        if (annotate){
+            plot.KDE(x$kdes[[sname]],pch=NA,ylim=c(0,M),...)
+        } else {
+            plot.KDE(x$kdes[[sname]],pch=x$pch,axes=FALSE,xlab="",ylab="",ylim=c(0,M),...)
+        }
     }
 }
 
@@ -111,7 +130,7 @@ plot.distributional <- function(x,snames=NULL,annotate=TRUE,CAD=FALSE,
 #'     object
 #' @examples
 #' data(Namib)
-#' plot(Namib$HM,'N1',colmap='heat.colors')
+#' plot(Namib$Major,'N1',colmap='heat.colors')
 #' @method plot compositional
 #' @export
 plot.compositional <- function(x,sname,annotate=TRUE,colmap=NULL,...){
@@ -123,6 +142,11 @@ plot.compositional <- function(x,sname,annotate=TRUE,colmap=NULL,...){
     } else {
         graphics::pie(unlist(x$x[i,]),labels=NA,col=col,...)
     }
+}
+#' @method plot counts
+#' @export
+plot.counts <- function(x,sname,annotate=TRUE,colmap=NULL,...){
+    plot.compositional(x,sname,annotate=annotate,colmap=colmap,...)
 }
 
 #' Plot a Procrustes configuration
@@ -167,6 +191,23 @@ plot.GPA <- function(x,pch=NA,pos=NULL,col='black',bg='white',cex=1,...){
 #' @export
 plot.PCA <- function(x,...){
     stats::biplot(x,...)
+}
+
+#' Point-counting biplot
+#'
+#' Plot the results of a correspondence analysis as a biplot
+#' @param x an object of class \code{CA}
+#' @param ... optional arguments of the \code{biplot} function
+#' @examples
+#' data(Namib)
+#' plot(CA(Namib$PT))
+#' @seealso CA
+#' @method plot CA
+#' @export
+plot.CA <- function(x,...){
+    stats::biplot(x$rscore,x$cscore,var.axes=TRUE,
+                  xlab='Component 1',
+                  ylab='Component 2',...)
 }
 
 #' Plot an MDS configuration
@@ -220,7 +261,6 @@ plot.MDS <- function(x,nnlines=FALSE,pch=NA,pos=NULL,cex=1,
                 graphics::plot(x$points[,c(i,j)], type='n', asp=1, xlab=xlab, ylab=ylab, ...)
                 if (nnlines) { # draw lines between closest neighbours
                     if (is.na(pch)) pch=21
-                    if (is.na(cex)) cex=2.5
                     plotlines(x$points[,c(i,j)],x$diss)
                 }
                 graphics::points(x$points[,c(i,j)], pch=pch, cex=cex, col=col, bg=bg)
@@ -239,7 +279,7 @@ plot.MDS <- function(x,nnlines=FALSE,pch=NA,pos=NULL,cex=1,
                     ylab <- "Distance/Disparity"
                     if (k>2) ylab <- paste0(ylab,' (Dims ',i,' & ',j,')')
                     shep <- MASS::Shepard(x$diss, x$points[,c(i,j)])
-                    graphics::plot(shep, pch=".", xlab="Dissimilarity", ylab=ylab)
+                    graphics::plot(shep,pch=20,xlab="Dissimilarity",ylab=ylab)
                     graphics::lines(shep$x, shep$yf, type="S")
                     if (i==1 & j==2)
                         graphics::title(paste0("Stress = ",x$stress))    
@@ -312,111 +352,6 @@ summaryplot <- function(...,ncol=1){
     }
     graphics::par(oldpar)
 }
-#' Plot a ternary diagram
-#'
-#' Plots triplets of compositional data on a ternary diagram
-#' @param x an object of class \code{ternary}, or a three-column data
-#'     frame or matrix
-#' @param type adds annotations to the ternary diagram, one of either
-#'     \code{empty}, \code{QFL.descriptive}, \code{QFL.folk} or
-#'     \code{QFL.dickinson}
-#' @param pch plot character, see \code{?par} for details (may be a
-#'     vector)
-#' @param pos position of the sample labels relative to the plot
-#'     symbols if pch != NA
-#' @param labels vector of strings to be added to the plot symbols
-#' @param showpath if \code{x} has class \code{SRDcorrected}, and
-#'     \code{showpath}==TRUE, the intermediate values of the SRD
-#'     correction will be plotted on the ternary diagram as well as
-#'     the final composition
-#' @param col colour to be used for the background lines (if
-#'     applicable)
-#' @param bg background colour for the plot symbols (may be a vector)
-#' @param ellipse plot a logistic \eqn{100(1-alpha)\%} confidence
-#'     region around the data (\code{population=TRUE}) or around its
-#'     mean (\code{population=FALSE})?
-#' @param alpha the confidence level (\eqn{0\leq\alpha\leq1}) for the
-#'     confidence region.
-#' @param population draw the confidence region around the entire
-#'     population, or around its mean?
-#' @param ... optional arguments to the generic \code{points} function
-#' @examples
-#' data(Namib)
-#' tern <- ternary(Namib$PT,'Q',c('KF','P'),c('Lm','Lv','Ls'))
-#' plot(tern,type='QFL.descriptive',pch=21,bg='red',labels=NULL)
-#' @seealso ternary
-#' @method plot ternary
-#' @export
-plot.ternary <- function(x,type='empty',pch=NA,pos=NULL,
-                         labels=names(x),showpath=FALSE,bg=NA,
-                         col='cornflowerblue',ellipse=FALSE,
-                         alpha=0.05,population=TRUE,...){
-    graphics::plot(c(0,1),c(0,1),type='n',xaxt='n',yaxt='n',
-                   xlab='',ylab='',asp=1,bty='n',...)
-    if (type=='empty') {
-        cornerlabels <- colnames(x$x)
-    } else {
-        cornerlabels <- lines.ternary(type=type,col=col)
-    }
-    corners <- xyz2xy(matrix(c(1,0,0,1,0,1,0,0,0,0,1,0),ncol=3))
-    graphics::lines(corners)
-    graphics::text(corners[1:3,],labels=cornerlabels,pos=c(3,1,1))
-    xy <- xyz2xy(x$x)
-    if (is.na(pch) && is.null(labels)){ pch <- 1 }
-    if (!is.na(pch) && is.null(pos)){ pos <- 1 }
-    if (!is.na(pch)) graphics::points(xy,pch=pch,bg=bg,...)
-    if (!is.null(labels)){ graphics::text(xy,labels=labels,pos=pos) }
-    if (showpath & methods::is(x,'SRDcorrected')) plotpath(x)
-    if (ellipse) ternary.ellipse(x,alpha=alpha,population=population)
-}
-#' Add points on a ternary diagram
-#' 
-#' @param x an object of class \code{ternary}, or a three-column data
-#'     frame or matrix
-#' @param ... optional arguments to the generic \code{points} function
-#' @examples
-#' tern <- ternary(Namib$PT,'Q',c('KF','P'),c('Lm','Lv','Ls'))
-#' plot(tern,pch=21,bg='red',labels=NULL)
-#' # add the geometric mean composition as a yellow square:
-#' gmean <- ternary(exp(colMeans(log(tern$x))))
-#' points(gmean,pch=22,bg='yellow')
-#' @method points ternary
-#' @export
-points.ternary <- function(x,...){
-    xy <- xyz2xy(x$x)
-    graphics::points(xy,...)
-}
-# add a 100(1-alpha)% confidence ellipse
-# to an existing ternary diagram
-ternary.ellipse <- function(x,alpha=0.05,population=TRUE,...){
-    uv <- ALR(x)
-    u <- subset(uv$x,select=1)
-    v <- subset(uv$x,select=2)
-    n <- length(u)
-    m <- 2
-    df1 <- m
-    df2 <- n-m
-    if (population) k <- n+1
-    else k <- 1
-    hk <- k*(n-1)*stats::qf(1-alpha,df1,df2)/(n*(n-m))
-    S <- stats::cov(uv$x)
-    VW2VT <- svd(S)
-    V <- VW2VT$u
-    W2 <- diag(VW2VT$d)
-    w1 <- sqrt(VW2VT$d[1])
-    w2 <- sqrt(VW2VT$d[2])
-    YbarY <- rbind(mean(u)-u,mean(v)-v)
-    res <- 100
-    g1 <- w1*sqrt(hk)*cos(seq(from=0,to=2*pi,length.out=res))
-    g2 <- w2*sqrt(hk)*sin(seq(from=0,to=2*pi,length.out=res))
-    G <- rbind(g1,g2)
-    ell <- list()
-    class(ell) <- 'compositional'
-    ell$x <- t(V%*%G + rbind(rep(mean(u),res),rep(mean(v),res)))
-    XYZ <- ALR(ell,inverse=TRUE)
-    xy <- xyz2xy(XYZ$x)
-    graphics::lines(xy,...)
-}
 
 #' Plot inferred grain size distributions
 #'
@@ -433,7 +368,8 @@ ternary.ellipse <- function(x,alpha=0.05,population=TRUE,...){
 #' @examples
 #' data(endmembers,densities)
 #' OPH <- subset(endmembers,select="ophiolite")
-#' distribution <- minsorting(OPH,densities,phi=2,sigmaphi=1,medium="air",by=0.05)
+#' distribution <- minsorting(OPH,densities,phi=2,sigmaphi=1,
+#'                            medium="air",by=0.05)
 #' plot(distribution,components=c('F','px','opaques'))
 #' @seealso minsorting
 #' @method plot minsorting
@@ -515,7 +451,9 @@ plotlines <- function(conf,diss) {
 
 # annotation of various plots used in summaryplot function
 annotation <- function(x,...){ UseMethod("annotation",x) }
-annotation.default <- function(x,...){stop('x not of class KDEs, compositional or distributional in annotation(x)')}
+annotation.default <- function(x,...){
+    stop('x not of class KDEs, compositional or distributional in annotation(x)')
+}
 annotation.KDEs <- function(x,height=NULL,...){
     oldpar <- graphics::par()
     if (is.null(height)){ graphics::par(mar=c(2,0,0,0)) }
@@ -543,6 +481,9 @@ annotation.compositional <- function(x,height=NULL,...){
     col <- do.call(x$colmap,list(length(labels)))
     graphics::pie(comp,labels=labels,col=col,...)
 }
+annotation.counts <- function(x,height=NULL,...){
+    annotation.compositional(x,height=NULL,...)
+}
 annotation.distributional <- function(x,height=NULL,...){
     oldpar <- graphics::par()
     if (is.null(height)){ graphics::par(mar=c(2,0,0,0)) }
@@ -556,9 +497,53 @@ annotation.distributional <- function(x,height=NULL,...){
     graphics::par(mar=oldpar$mar)
 }
 
-lines.ternary <- function(type='empty',col='cornflowerblue'){
-    oldcol <- graphics::par('col')
-    graphics::par(col=col)
+ternary.ticks <- function(ticks=seq(0,1,0.25),ticklength=0.02){
+    for (tick in ticks){
+        xtick <- xyz2xy(matrix(c(tick,1-tick-ticklength,ticklength,
+                                 tick,1-tick,0,
+                                 tick-ticklength,1-tick,ticklength),
+                               ncol=3,byrow=TRUE))
+        ytick <- xyz2xy(matrix(c(ticklength,tick,1-tick-ticklength,
+                                 0,tick,1-tick,
+                                 ticklength,tick-ticklength,1-tick),
+                               ncol=3,byrow=TRUE))
+        ztick <- xyz2xy(matrix(c(1-tick-ticklength,ticklength,tick,
+                                 1-tick,0,tick,
+                                 1-tick,ticklength,tick-ticklength),
+                               ncol=3,byrow=TRUE))
+        if (tick>0 & tick<1){
+            graphics::lines(xtick)
+            graphics::lines(ytick)
+            graphics::lines(ztick)
+        }
+    }
+}
+ternary.grid <- function(ticks=seq(0,1,0.25),
+                         col='cornflowerblue',lty=2,lwd=1){
+    oldpar <- graphics::par('col','lty','lwd')
+    graphics::par(col=col,lty=lty,lwd=lwd)
+    for (tick in ticks){
+        xline <- xyz2xy(matrix(c(tick,1-tick,0,
+                                 tick,0,1-tick),
+                               ncol=3,byrow=TRUE))
+        yline <- xyz2xy(matrix(c(0,tick,1-tick,
+                                 1-tick,tick,0),
+                               ncol=3,byrow=TRUE))
+        zline <- xyz2xy(matrix(c(1-tick,0,tick,
+                                 0,1-tick,tick),
+                               ncol=3,byrow=TRUE))
+        if (tick>0 & tick<1){
+            graphics::lines(xline)
+            graphics::lines(yline)
+            graphics::lines(zline)
+        }
+    }
+    graphics::par(oldpar)
+}
+ternary.lines <- function(type='empty',col='cornflowerblue',
+                          ticks=seq(0,1,0.25),lty=2,lwd=1){
+    oldpar <- graphics::par('col','lty','lwd')
+    graphics::par(col=col,lty=lty,lwd=lwd)
     thelabels <- c('x','y','z')
     if (type=='QFL.descriptive'){
         xy1 <- xyz2xy(matrix(c(90,0,10,10,0,90),ncol=3))
@@ -576,12 +561,18 @@ lines.ternary <- function(type='empty',col='cornflowerblue'){
         graphics::text(xyz2xy(c(32,18,50)),labels=expression(paste('fQ',bold('L'))))
         graphics::text(xyz2xy(c(18,50,32)),labels=expression(paste('qL',bold('F'))))
         graphics::text(xyz2xy(c(18,32,50)),labels=expression(paste('qF',bold('L'))))
-        graphics::text(xyz2xy(c(65,30,5)),labels=expression(paste('feldspatho-',bold('quartzose'))),srt=60)
-        graphics::text(xyz2xy(c(30,65,5)),labels=expression(paste('quartzo-',bold('feldspathic'))),srt=60)
-        graphics::text(xyz2xy(c(65,5,30)),labels=expression(paste('litho-',bold('quartzose'))),srt=-60)
-        graphics::text(xyz2xy(c(30,5,65)),labels=expression(paste('quartzo-',bold('lithic'))),srt=-60)
-        graphics::text(xyz2xy(c(5,30,65)),labels=expression(paste('feldspatho-',bold('lithic'))))
-        graphics::text(xyz2xy(c(5,65,30)),labels=expression(paste('litho-',bold('feldspathic'))))
+        graphics::text(xyz2xy(c(65,30,5)),
+                       labels=expression(paste('feldspatho-',bold('quartzose'))),srt=60)
+        graphics::text(xyz2xy(c(30,65,5)),
+                       labels=expression(paste('quartzo-',bold('feldspathic'))),srt=60)
+        graphics::text(xyz2xy(c(65,5,30)),
+                       labels=expression(paste('litho-',bold('quartzose'))),srt=-60)
+        graphics::text(xyz2xy(c(30,5,65)),
+                       labels=expression(paste('quartzo-',bold('lithic'))),srt=-60)
+        graphics::text(xyz2xy(c(5,30,65)),
+                       labels=expression(paste('feldspatho-',bold('lithic'))))
+        graphics::text(xyz2xy(c(5,65,30)),
+                       labels=expression(paste('litho-',bold('feldspathic'))))
         thelabels <- c('Q','F','L')
     } else if (type=='QFL.folk'){
         xy1 <- xyz2xy(matrix(c(90,90,10,0,0,10),ncol=3))
@@ -608,7 +599,7 @@ lines.ternary <- function(type='empty',col='cornflowerblue'){
         graphics::text(xyz2xy(c(50,45,5)),labels='continental block',srt=65)
         thelabels <- c('Q','F','L')
     }
-    graphics::par(col=oldcol)
+    graphics::par(oldpar)
     return(thelabels)
 }
 

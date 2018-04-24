@@ -9,14 +9,15 @@ PCA(x, ...)
 \arguments{
 \item{x}{an object of class \code{compositional}}
 
-\item{...}{optional arguments to R's \code{princomp function}}
+\item{...}{optional arguments to R's \code{princomp} function}
 }
 \value{
-an object of classes \code{PCA}, which is synonymous to
-the stats packages' \code{princomp} class.
+an object of classes \code{PCA}, which is synonymous to the
+    stats packages' \code{princomp} class.
 }
 \description{
-Performs PCA of compositional data using a centred logratio distance
+Performs PCA of compositional data using a centred logratio
+distance
 }
 \examples{
 data(Namib)

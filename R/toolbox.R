@@ -1,238 +1,3 @@
-#' Read a .csv file with continuous (detrital zircon) data
-#'
-#' Reads a data table containing continuous data (e.g. detrital zircon
-#' ages)
-#' @param fname the path of a .csv file with the input data,
-#' arranged in columns.
-#' @param errorfile the (optional) path of a .csv file with the
-#' standard errors of the input data, arranged by column in the same
-#' order as \code{fname}. Must be specified if the data are to be
-#' compared with the Sircombe-Hazelton dissimilarity.
-#' @param method an optional string specifying the dissimilarity
-#' measure which should be used for comparing this with other
-#' datasets. Should be one of either \code{"KS"} (for
-#' Kolmogorov-Smirnov) or \code{"SH"} (for Sircombe and Hazelton). If
-#' \code{method = "SH"}, then \code{errorfile} should be specified. If
-#' \code{method = "SH"} and \code{errorfile} is unspecified, then the
-#' program will default back to the Kolmogorov-Smirnov dissimilarity.
-#' @param xlab an optional string specifying the nature and units of
-#' the data.  This string is used to label kernel density estimates.
-#' @param colmap an optional string with the name of one of R's
-#' built-in colour palettes (e.g., heat.colors, terrain.colors,
-#' topo.colors, cm.colors), which are to be used for plotting the data.
-#' @return an object of class \code{distributional}, i.e. a list with the
-#' following items:
-#' 
-#' \code{x}: a named list of vectors containing the numerical data for each sample
-#' 
-#' \code{err}: an (optional) named list of vectors containing the standard errors of \code{x}
-#'
-#' \code{method}: either "KS" (for Kolmogorov-Smirnov), "Kuiper" (for
-#' the Kuiper statistic) or "SH" (for Sircombe Hazelton)
-#' 
-#' \code{breaks}: a vector with the locations of the histogram bin edges
-#' 
-#' \code{xlab}: a string containing the label to be given to the x-axis on all plots
-#' @examples
-#' agefile <- system.file("DZ.csv",package="provenance")
-#' errfile <- system.file("DZerr.csv",package="provenance")
-#' DZ <- read.distributional(agefile,errfile)
-#' plot(KDE(DZ$x$N1))
-#' @export
-read.distributional <- function(fname,errorfile=NA,method="KS",xlab="age [Ma]",colmap='rainbow') {
-    out <- list()
-    out$name <- basename(substr(fname,1,nchar(fname)-4))
-    if (method=="SH" & is.na(errorfile)) method <- "KS"
-    class(out) <- "distributional"
-    out$method <- method
-    out$x <- list()
-    out$err <- list()
-    out$colmap <- colmap
-    dat <- utils::read.csv(fname,header=TRUE)
-    ns = length(dat)
-    for (i in 1:ns){
-        out$x[[names(dat)[i]]] = dat[!is.na(dat[,i]),i]
-    }
-    if (!is.na(errorfile)){
-        err <- utils::read.csv(errorfile,header=TRUE)
-        for (i in 1:ns) {
-            out$err[[names(dat)[i]]] = dat[!is.na(err[,i]),i]
-        }
-    }
-    d <- unlist(out$x)
-    ng <- length(d) # number of grains
-    nb <- log(ng/ns,base=2)+1
-    out$breaks <- seq(min(d),max(d),length.out=nb+1)
-    out$xlab <- xlab
-    return(out)
-}
-
-#' Read a .csv file with categorical data
-#'
-#' Reads a data table containing categorical data (e.g. petrographic,
-#' heavy mineral or geochemical data)
-#'
-#' @param fname a string with the path to the .csv file
-#' @param method either "bray" (for the Bray-Curtis distance) or
-#' "aitchison" (for Aitchison's central logratio distance). If
-#' omitted, the function defaults to 'aitchison', unless there are
-#' zeros present in the data.
-#' @param colmap an optional string with the name of one of R's
-#' built-in colour palettes (e.g., heat.colors, terrain.colors,
-#' topo.colors, cm.colors), which are to be used for plotting the data.
-#' @return an object of class \code{compositional}, i.e. a list with the
-#' following items:
-#' 
-#' \code{x}: a data frame with the samples as rows and the categories as columns
-#'
-#' \code{method}: either "aitchison" (for Aitchison's centred logratio
-#' distance) or "bray" (for the Bray-Curtis distance)
-#' @examples
-#' fname <- system.file("Major.csv",package="provenance")
-#' Major <- read.compositional(fname)
-#' plot(PCA(Major))
-#' @export
-read.compositional <- function(fname,method=NULL,colmap='rainbow') {
-    out <- list()
-    out$name <- basename(substr(fname,1,nchar(fname)-4))
-    class(out) <- "compositional"
-    out$x <- utils::read.csv(fname,header=TRUE,row.names=1)
-    if (is.null(method)){
-        if (any(out$x==0)) { method <- "bray" }
-        else { method <- "aitchison" }
-    }
-    out$method <- method
-    out$colmap <- colmap
-    if (any(out$x==0) & method=="aitchison"){
-        stop(paste("This dataset contains zeros and is",
-                   "incompatible with the 'aitchison' distance"))
-    }
-    return(out)
-}
-#' Read a .csv file with mineral and rock densities
-#'
-#' Reads a data table containing densities to be used for
-#' hydraulic sorting corrections (minsorting and srd functions)
-#'
-#' @param fname a string with the path to the .csv file
-#' @return a vector with mineral and rock densities
-#' @examples
-#' data(Namib,densities)
-#' N8 <- subset(Namib$HM,select="N8")
-#' distribution <- minsorting(N8,densities,phi=2,sigmaphi=1,medium="air",by=0.05)
-#' plot(distribution)
-#' @export
-read.densities <- function(fname){
-    return(utils::read.csv(fname,header=TRUE))
-}
-
-#' create a \code{data.frame} object
-#'
-#' Convert an object of class \code{compositional} to a
-#' \code{data.frame} for use in the \code{robCompositions} package
-#'
-#' @param x an object of class \code{compositional}
-#' @param ... optional arguments to be passed on to the generic function
-#' @return a \code{data.frame}
-#' @examples
-#' data(Namib)
-#' qfl <- ternary(Namib$PT,c('Q'),c('KF','P'),c('Lm','Lv','Ls'))
-#' plot(qfl,type="QFL.dickinson")
-#' qfl.frame <- as.data.frame(qfl)
-#' ## uncomment the next two lines to plot an error
-#' ## ellipse using the robCompositions package:
-#' # library(robCompositions)
-#' # pca <- pcaCoDa(qfl.frame)
-#' # plot(pca,xlabs=rownames(qfl.frame))
-#' @export
-as.data.frame.compositional <- function(x,...){
-    nc <- ncol(as.matrix(x$x))
-    if (nc==3) out <- data.frame(x$x[,c(2,3,1)],...)
-    if (nc>3) out <- data.frame(x$x[,c(2,3,1,4:nc)],...)
-    if (nc<3) out <- data.frame(x$x,...)
-    return(out)
-}
-
-#' create an \code{acomp} object
-#'
-#' Convert an object of class \code{compositional} to an object of
-#' class \code{acomp} for use in the \code{compositions} package
-#'
-#' @param x an object of class \code{compositional}
-#' @return a \code{data.frame}
-#' @examples
-#' data(Namib)
-#' qfl <- ternary(Namib$PT,c('Q'),c('KF','P'),c('Lm','Lv','Ls'))
-#' plot(qfl,type="QFL.dickinson")
-#' qfl.acomp <- as.acomp(qfl)
-#' ## uncomment the next two lines to plot an error
-#' ## ellipse using the compositions package: 
-#' # library(compositions)
-#' # ellipses(mean(qfl.acomp),var(qfl.acomp),r=2)
-#' @export
-as.acomp <- function(x){
-    if (!methods::is(x,"compositional")){
-        stop("not an object of class compositional or ternary")
-    }
-    dat <- as.matrix(as.data.frame(x))
-    out <- structure(dat)
-    attributes(out) <- list(dim = dim(dat), dimnames=dimnames(dat), class="acomp")
-    return(out)
-}
-
-as.compositional.matrix <- function(x,method=NULL,colmap='rainbow'){
-    out <- list(x=NULL,method=method,colmap=colmap)
-    class(out) <- "compositional"
-    out$x <- as.matrix(x)
-    nc <- ncol(out$x)
-    if (nc==3) out$x <- out$x[,c(3,1,2)]
-    if (nc>3) out$x <- out$x[,c(3,1,2,4:nc)]
-    if (nc<3) out$x <- out$x
-    return(out)
-}
-
-#' create a \code{compositional} object
-#'
-#' Convert an object of class \code{matrix}, \code{data.fram} or
-#' \code{acomp} to an object of class \code{compositional}
-#'
-#' @param x an object of class \code{matrix}, \code{data.fram} or
-#' \code{acomp}
-#' @param method dissimilarity measure, either 'aitchison' for
-#' Aitchison's CLR-distance or 'bray' for the Bray-Curtis distance.
-#' @param colmap the colour map to be used in pie charts.
-#' @return an object of class \code{compositional}
-#' @examples
-#' data(Namib)
-#' PT.acomp <- as.acomp(Namib$PT)
-#' PT.compositional <- as.compositional(PT.acomp)
-#' print(Namib$PT$x - PT.compositional$x)
-#' ## uncomment the following lines for an illustration of using this 
-#' ## function to integrate the \code{provenance} package with \code{compositions}
-#' # library(compositions)
-#' # data(Glacial)
-#' # a.glac <- acomp(Glacial)
-#' # c.glac <- as.compositional(a.glac)
-#' # summaryplot(c.glac,ncol=8)
-#' @export
-as.compositional <- function(x,method=NULL,colmap='rainbow'){
-    if (methods::is(x,"acomp")){
-        attr <- attributes(x)
-        attributes(x) <- NULL
-        x[!is.numeric(x)] <- NA
-        y <- matrix(x,nrow=attr$dim[[1]],ncol=attr$dim[[2]],dimnames=attr$dimnames)
-        print(print(attr$dim[[1]]))
-        return(as.compositional.matrix(y))
-    } else if (methods::is(x,"data.frame") | methods::is(x,"matrix")){
-        y <- as.matrix(x)
-        dimnames(y) <- dimnames(x)
-        return(as.compositional.matrix(y,method,colmap))
-    } else {
-        stop(paste("cannot convert an object of class",class(x),
-                   "into an object of class compositional"))
-    }
-}
-
 #' Kolmogorov-Smirnov dissimilarity
 #'
 #' Returns the Kolmogorov-Smirnov dissimilarity between two samples
@@ -323,7 +88,7 @@ diss.distributional <- function(x,method=NULL) {
 diss.compositional <- function(x,method=NULL){
     if (!is.null(method)) x$method <- method
     if (x$method=="aitchison"){
-        out <- stats::dist(CLR(x)$x)
+        out <- stats::dist(CLR(x))
     } else {
         snames <- names(x)
         ns <- length(snames)
@@ -337,6 +102,30 @@ diss.compositional <- function(x,method=NULL){
         }
         out <- stats::as.dist(d)
     }
+    class(out) <- append("diss",class(out))
+    return(out)
+}
+#' @rdname diss
+#' @export
+diss.counts <- function(x,method=NULL){
+    if (!is.null(method)) x$method <- method
+    snames <- names(x)
+    ns <- length(snames)
+    d <- mat.or.vec(ns,ns)
+    X <- x$x / rowSums(x$x) # normalise data
+    CC <- colSums(X)
+    for (i in 1:ns){
+        for (j in 1:ns){
+            if (x$method=='bray'){
+                d[i,j] <- bray.diss(x$x[i,],x$x[j,])
+            } else { # chisq
+                d[i,j] <- sqrt(sum( (1/CC)*(X[i,] - X[j,])^2 ))
+            }
+        }
+    }
+    rownames(d) <- snames
+    colnames(d) <- snames
+    out <- stats::as.dist(d)
     class(out) <- append("diss",class(out))
     return(out)
 }
@@ -397,6 +186,12 @@ MDS.compositional <- function(x,classical=FALSE,k=2,...){
 }
 #' @rdname MDS
 #' @export
+MDS.counts <- function(x,classical=FALSE,k=2,...){
+    d <- diss.counts(x,...)
+    return(MDS.diss(d,classical=classical,k=k))
+}
+#' @rdname MDS
+#' @export
 MDS.distributional <- function(x,classical=FALSE,k=2,...){
     d <- diss.distributional(x,...)
     return(MDS.diss(d,classical=classical,k=k))
@@ -419,9 +214,14 @@ MDS.diss <- function(x,classical=FALSE,k=2,...){
 #' Centred logratio transformation
 #'
 #' Calculates Aitchison's centered logratio transformation for a
-#' dataset of class \code{compositional}
-#' @param x an object of class \code{compositional}
-#' @return a matrix of CLR coordinates
+#' dataset of class \code{compositional} or a compositional data
+#' matrix.
+#' @param x an object of class \code{compositional} OR a matrix of
+#'     numerical values
+#' @param inverse perform the inverse inverse logratio transformation?
+#' @param ... optional arguments
+#' @return a matrix of CLR coordinates OR an object of class
+#'     \code{compositional} (if \code{inverse=TRUE})
 #' @examples
 #' # The following code shows that applying provenance's PCA function
 #' # to compositional data is equivalent to applying R's built-in
@@ -429,45 +229,88 @@ MDS.diss <- function(x,classical=FALSE,k=2,...){
 #' data(Namib)
 #' plot(PCA(Namib$Major))
 #' dev.new()
-#' clrdat <- CLR(Namib$Major)$x
+#' clrdat <- CLR(Namib$Major)
 #' biplot(princomp(clrdat))
+#' @rdname CLR
 #' @export
-CLR <- function(x){
-    if (!methods::is(x,'compositional')){stop('CLR(x): x is not of class compositional.')}
-    out <- x
-    g <- apply(log(x$x),1,mean)
-    nc <- ncol(x$x)
-    gg <- matrix(rep(g,nc),ncol=nc,byrow=FALSE)
-    out$x <- log(x$x) - gg
-    return(out)
-}
-
-ALR <- function(x,inverse=FALSE){
-    if (!methods::is(x,'compositional')){stop('CLR(x): x is not of class compositional.')}
-    out <- x
-    nr <- nrow(x$x)
-    nc <- ncol(x$x)
+CLR <- function(x,...){ UseMethod("CLR",x) }
+#' @rdname CLR
+#' @export
+CLR.default <- function(x,inverse=FALSE,...){
     if (inverse){
-        out$x <- matrix(0,nr,nc+1)
-        den <- 1+apply(exp(x$x),MARGIN=1,FUN='sum')
-        for (i in 1:nc)
-            out$x[,i] <- exp(x$x[,i])/den
-        out$x[,nc+1] <- 1/den
+        closure <-  rowSums(exp(x)) %*% matrix(1,nrow=1,ncol=length(x))
+        out <- list()
+        class(out) <- "compositional"
+        out$x <- exp(x) / closure
     } else {
-        out$x <- matrix(0,nr,nc-1)
-        for (i in 1:(nc-1))
-            out$x[,i] <- log(x$x[,i]) - log(x$x[,nc])
+        g <- apply(log(x),1,mean)
+        nc <- ncol(x)
+        gg <- matrix(rep(g,nc),ncol=nc,byrow=FALSE)
+        out <- log(x) - gg
     }
     return(out)
+}
+#' @rdname CLR
+#' @export
+CLR.compositional <- function(x,...){
+    return(CLR(x$x,...))
+}
+
+#' Additive logratio transformation
+#'
+#' Calculates Aitchison's additive logratio transformation for a
+#' dataset of class \code{compositional} or a compositional data
+#' matrix.
+#' @param x an object of class \code{compositional} OR a matrix of
+#'     numerical values
+#' @param inverse perform the inverse inverse logratio transformation?
+#' @param ... optional arguments
+#' @return a matrix of ALR coordinates OR an object of class
+#'     \code{compositional} (if \code{inverse=TRUE}).
+#' @examples
+#' # logratio plot of trace element concentrations:
+#' data(Namib)
+#' alr <- ALR(Namib$Trace)
+#' pairs(alr[,1:5])
+#' title('log(X/Pb)')
+#' @export
+#' @rdname ALR
+#' @export
+ALR <- function(x,...){ UseMethod("ALR",x) }
+#' @rdname ALR
+#' @export
+ALR.default <- function(x,inverse=FALSE,...){
+    dat <- as.matrix(x)
+    nr <- nrow(dat)
+    nc <- ncol(dat)
+    if (inverse){
+        num <- matrix(1,nr,nc+1)
+        num[,1:nc] <- exp(dat)
+        den <- rowSums(num) %*% matrix(1,1,nc+1)
+        out <- list()
+        class(out) <- "compositional"
+        out$x <- num / den
+    } else {
+        num <- log(dat[,1:(nc-1)])
+        den <- log(dat[,nc]) %*% matrix(1,1,nc-1)
+        out <- num - den
+    }
+    return(out)
+}
+#' @rdname ALR
+#' @export
+ALR.compositional <- function(x,...){
+    return(ALR(x$x,...))
 }
 
 #' Principal Component Analysis
 #'
-#' Performs PCA of compositional data using a centred logratio distance
+#' Performs PCA of compositional data using a centred logratio
+#' distance
 #' @param x an object of class \code{compositional}
-#' @param ... optional arguments to R's \code{princomp function}
-#' @return an object of classes \code{PCA}, which is synonymous to
-#' the stats packages' \code{princomp} class.
+#' @param ... optional arguments to R's \code{princomp} function
+#' @return an object of classes \code{PCA}, which is synonymous to the
+#'     stats packages' \code{princomp} class.
 #' @examples
 #' data(Namib)
 #' plot(MDS(Namib$Major,classical=TRUE))
@@ -476,27 +319,60 @@ ALR <- function(x,inverse=FALSE){
 #' print("This example demonstrates the equivalence of classical MDS and PCA")
 #' @export
 PCA <- function(x,...){
-    if (!methods::is(x,'compositional')){stop('x is not of class compositional in PCA(x)')}
-    clrdat <- CLR(x)
-    pc <- stats::princomp(clrdat$x,...)
+    if (methods::is(x,'compositional') |
+        methods::is(x,'counts')){
+        dat <- CLR.compositional(x)
+    } else {
+        dat <- x
+    }
+    pc <- stats::princomp(dat,...)
     class(pc) <- append("PCA",class(pc))
     return(pc)
 }
 
+#' Correspondence Analysis
+#'
+#' Performs Correspondence Analysis of point-counting data
+#' @param x an object of class \code{counts}
+#' @param nf number of correspondence factors (dimensions)
+#' @param ... optional arguments to the \code{corresp} function of the
+#'     \code{MASS} package
+#' @return an object of classes \code{CA}, which is synonymous to the
+#'     MASS packages' \code{correspondence} class.
+#' @examples
+#' data(Namib)
+#' plot(CA(Namib$PT))
+#' @export
+CA <- function(x,nf=2,...){
+    if (methods::is(x,'counts') |
+        methods::is(x,'compositional')){
+        X <- x$x
+    } else {
+        X <- x
+    }
+    out <- MASS::corresp(X,nf=nf,...)
+    class(out) <- append("CA",class(out))
+    return(out)
+}
+
 #' Get a subset of distributional data
 #'
-#' Return a subset of provenance data according to some specified indices
+#' Return a subset of provenance data according to some specified
+#' indices
 #' @param x an object of class \code{distributional}
-#' @param subset logical expression indicating elements or rows to keep:
-#' missing values are taken as false.
+#' @param subset logical expression indicating elements or rows to
+#'     keep: missing values are taken as false.
 #' @param select a vector of sample names
 #' @param ... optional arguments for the generic subset function
 #' @return an object of class \code{distributional}
 #' @seealso read.distributional
 #' @examples
 #' data(Namib)
-#' coast <- subset(Namib$HM,select=c("N1","N2","T8","T13","N12","N13"))
-#' summaryplot(coast,ncol=2)
+#' coast <- c("N1","N2","T8","T13","N12","N13")
+#' ZTRcoast <- subset(Namib$HM,select=coast,components=c('gt','cpx','ep'))
+#' DZcoast <- subset(Namib$DZ,select=coast)
+#' summaryplot(ZTRcoast,KDEs(DZcoast),ncol=2)
+#' @name subset
 #' @export
 subset.distributional <- function(x,subset=NULL,select=NULL,...){
     out <- x
@@ -507,35 +383,26 @@ subset.distributional <- function(x,subset=NULL,select=NULL,...){
     } else {
         return(out)
     }
-    if (length(x$err)==length(x$x)) out$err <- x$err[i]
+    if (length(x$err)==length(x$x)) out$err <- x$err[i]    
     out$x <- x$x[i]
     return(out)
 }
-#' Get a subset of compositional data
-#'
-#' Return a subset of provenance data according to some specified indices
-#' @param x an object of class \code{compositional}
-#' @param subset logical expression indicating elements or rows to keep:
-#' missing values are taken as false.
-#' @param select a vector of sample names.
-#' @param components a vector specifying a subcomposition
-#' @param ... optional arguments for the generic subset function
-#' @return an object of class \code{compositional}
-#' @seealso read.compositional
+#' @param components categories to keep
+#' @rdname subset
 #' @export
-subset.compositional <- function(x,subset=NULL,select=NULL,components=NULL,...){
+subset.compositional <- function(x,subset=NULL,components=NULL,select=NULL,...){
     out <- x
     if (!is.null(subset)){
         i <- which(subset,arr.ind=TRUE)
     } else if (!is.null(select)){
         i <- which(names(x) %in% select)
     } else {
-        i <- 1:length(names(x))
+        i <- 1:nrow(x$x)
     }
     if (!is.null(components)){
         j <- which(colnames(x$x) %in% components,arr.ind=TRUE)
     } else {
-        j <- 1:length(colnames(x$x))
+        j <- 1:ncol(x$x)
     }
     out$x <- x$x[i,j]
     if (methods::is(x,"SRDcorrected")){
@@ -545,6 +412,17 @@ subset.compositional <- function(x,subset=NULL,select=NULL,components=NULL,...){
         }
     }
     return(out)
+}
+#' @rdname subset
+#' @export
+subset.counts <- function(x,subset=NULL,components=NULL,select=NULL,...){
+    out <- subset.compositional(x,subset=subset,select=select,components=components,...)
+    if (methods::is(x,"ternary")){
+        i <- which(rownames(x$raw) %in% rownames(out$x))
+        j <- which(colnames(x$raw) %in% colnames(out$x))
+        out$raw <- x$raw[i,j]
+    }
+    out
 }
 
 # returns list of dissimilarities between common items
@@ -733,6 +611,10 @@ names.compositional <- function(x){
     return(rownames(x$x))
 }
 #' @export
+names.counts <- function(x){
+    return(rownames(x$x))
+}
+#' @export
 names.KDEs <- function(x){
     return(names(x$kdes))
 }
@@ -822,7 +704,8 @@ get.f <- function(n,p=0.05){
 }
 
 get.densities <- function(X,dtable){
-    if (!methods::is(X,"compositional")) stop("input is not of class compositional")
+    if (!(methods::is(X,"compositional") | methods::is(X,"counts")))
+        stop("input is not of class compositional or counts")
     minerals <- colnames(X$x)
     i <- which(colnames(dtable) %in% colnames(X$x), arr.ind=TRUE)
     return(dtable[i])
@@ -833,35 +716,12 @@ ndim <- function(X){
 }
 
 sumcols <- function(X,x){
-    if (ndim(X)==0)
+    if (ndim(X)==0){
         out <- X[x]
-    else if (length(x)>1 & ndim(X[,x])>0) # >1 class, >1 sample
-        out <- apply(X[,x],1,sum)
-    else if (length(x)>1 & ndim(X[,x])==0) # >1 class, 1 sample
-        out <- sum(X[,x])
-    else if (length(x)==1 & ndim(X[,x])>0) # 1 class, >1 sample
-        out <- sum(X[,x])
-    else if (length(x)==1 & ndim(X[,x])==0) # 1 class, 1 sample
-        out <- X[,x]
-    return(out)
-}
-
-# X is a matrix or vector
-# x is an index or a (vector of) string(s)
-sumlabels <- function(X,x){
-    if (is.numeric(X) & is.numeric(x) & !is.null(names(X))){
-        i <- names(X)[x]
-    } else if (is.numeric(x) & !is.null(colnames(X))){
-        i <- colnames(X)[x]
     } else {
-        i <- x
-    }
-    out <- i[1]
-    n <- length(i)
-    if (n==1) return(out)
-    for (ii in 2:length(i)){
-        out <- paste(out,i[ii],sep='+')
-    }
+        dat <- subset(X,select=x)
+        out <- rowSums(dat)
+    }    
     return(out)
 }
 
@@ -906,6 +766,13 @@ amalgamate.compositional <- function(X,...){
 }
 #' @rdname amalgamate
 #' @export
+amalgamate.counts <- function(X,...){
+    out <- X
+    out$x <- amalgamate(X$x,...)
+    return(out)
+}
+#' @rdname amalgamate
+#' @export
 amalgamate.SRDcorrected <- function(X,...){
     out <- X
     out$x <- amalgamate.default(X$x,...)
@@ -918,15 +785,17 @@ amalgamate.SRDcorrected <- function(X,...){
 
 #' Combine samples of distributional data
 #'
-#' Lumps all single grain analyses of several samples together under a new name
+#' Lumps all single grain analyses of several samples together under a
+#' new name
 #' @param X a distributional dataset
-#' @param ... a series of new labels assigned to strings or vectors of strings
-#' denoting the samples that need amalgamating
+#' @param ... a series of new labels assigned to strings or vectors of
+#'     strings denoting the samples that need amalgamating
 #' @return a distributional data object with fewer samples than X
 #' @examples
 #' data(Namib)
-#' combined <- combine(Namib$DZ,east=c('N3','N4','N5','N6','N7','N8','N9','N10'),
-#'                        west=c('N1','N2','N11','N12','T8','T13'))
+#' combined <- combine(Namib$DZ,
+#'                     east=c('N3','N4','N5','N6','N7','N8','N9','N10'),
+#'                     west=c('N1','N2','N11','N12','T8','T13'))
 #' summaryplot(KDEs(combined))
 #' @export
 combine <- function(X,...){
@@ -941,69 +810,46 @@ combine <- function(X,...){
         out$x[[labels[i]]] <- NULL
         for (g in groups[[i]]){
             out$x[[labels[i]]] <- c(out$x[[labels[i]]],X$x[[g]])
-            if (loadErr) { out$err[[labels[i]]] <- c(out$err[[labels[i]]],X$err[[g]]) }
+            if (loadErr) {
+                out$err[[labels[i]]] <- c(out$err[[labels[i]]],X$err[[g]])
+            }
         }
     }
     return(out)    
 }
 
-# X is a matrix or vector
-# x, y, z is an index or (vector) of string(s)
-ternaryclosure <- function(X,x=1,y=2,z=3){
-    xlab <- sumlabels(X,x)
-    ylab <- sumlabels(X,y)
-    zlab <- sumlabels(X,z)
-    out <- cbind(sumcols(X,x),sumcols(X,y),sumcols(X,z))
-    den <- rowSums(out)
-    out <- apply(out,2,'/',den)
-    if (methods::is(out,"matrix")) {
-        colnames(out) <- c(xlab,ylab,zlab)
-    } else {
-        names(out) <- c(xlab,ylab,zlab)
+# from package mvtnorm:
+dmvnorm <- function(x,mean=rep(0,p),sigma=diag(p),log=FALSE) {
+    if (is.vector(x)) 
+        x <- matrix(x, ncol = length(x))
+    p <- ncol(x)
+    if (!missing(mean)) {
+        if (!is.null(dim(mean))) 
+            dim(mean) <- NULL
+        if (length(mean) != p) 
+            stop("mean and sigma have non-conforming size")
     }
-    return(out)
-}
-
-#' Define a ternary composition
-#'
-#' Create an object of class \code{ternary}
-#' @param X an object of class \code{compositional} OR a matrix or
-#'     data frame with numerical data
-#' @param x string or a vector of strings indicating the variables
-#'     making up the first subcomposition of the ternary system. If
-#'     omitted, the first component of X is used instead.
-#' @param y second (set of) variables
-#' @param z third (set of) variables
-#' @return an object of class \code{ternary}, i.e. a list containing:
-#'
-#' x: a three column matrix (or vector) of ternary compositions.
-#'
-#' and (if X is of class \code{SRDcorrected})
-#'
-#' restoration: a list of intermediate ternary compositions inherited
-#' from the SRD correction
-#'
-#' @seealso restore
-#' @examples
-#' data(Namib)
-#' tern <- ternary(Namib$PT,c('Q'),c('KF','P'),c('Lm','Lv','Ls'))
-#' plot(tern,type="QFL")
-#' @export
-ternary <- function(X,x=1,y=2,z=3){
-    if (methods::is(X,"compositional")) dat <- X$x
-    else dat <- X
-    out <- list()
-    class(out) <- append("ternary","compositional")
-    arg <- deparse(substitute(x))
-    out$x <- ternaryclosure(dat,x,y,z)
-    if (methods::is(X,"SRDcorrected")){
-        out$restoration <- list()
-        snames <- names(X$restoration)
-        for (sname in snames){
-            out$restoration[[sname]] <-
-                ternaryclosure(X$restoration[[sname]],x,y,z)
-        }
-        class(out) <- append("SRDcorrected",class(out))
+    if (!missing(sigma)) {
+        if (p != ncol(sigma)) 
+            stop("x and sigma have non-conforming size")
+        if (!isSymmetric(sigma, tol = sqrt(.Machine$double.eps), 
+            check.attributes = FALSE)) 
+            stop("sigma must be a symmetric matrix")
     }
-    return(out)
+    dec <- tryCatch(chol(sigma), error = function(e) e)
+    if (inherits(dec, "error")) {
+        x.is.mu <- colSums(t(x) != mean) == 0
+        logretval <- rep.int(-Inf, nrow(x))
+        logretval[x.is.mu] <- Inf
+    }
+    else {
+        tmp <- backsolve(dec, t(x) - mean, transpose = TRUE)
+        rss <- colSums(tmp^2)
+        logretval <- -sum(log(diag(dec))) - 0.5 * p * log(2 * 
+            pi) - 0.5 * rss
+    }
+    names(logretval) <- rownames(x)
+    if (log) 
+        logretval
+    else exp(logretval)
 }
