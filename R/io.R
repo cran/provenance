@@ -250,7 +250,7 @@ as.compositional.matrix <- function(x,method=NULL,colmap='rainbow'){
 #' Convert an object of class \code{matrix}, \code{data.frame} or
 #' \code{acomp} to an object of class \code{compositional}
 #'
-#' @param x an object of class \code{matrix}, \code{data.fram} or
+#' @param x an object of class \code{matrix}, \code{data.frame} or
 #' \code{acomp}
 #' @param method dissimilarity measure, either 'aitchison' for
 #' Aitchison's CLR-distance or 'bray' for the Bray-Curtis distance.
@@ -275,7 +275,6 @@ as.compositional <- function(x,method=NULL,colmap='rainbow'){
         attributes(x) <- NULL
         x[!is.numeric(x)] <- NA
         y <- matrix(x,nrow=attr$dim[[1]],ncol=attr$dim[[2]],dimnames=attr$dimnames)
-        print(print(attr$dim[[1]]))
         return(as.compositional.matrix(y))
     } else if (methods::is(x,"data.frame") | methods::is(x,"matrix")){
         y <- as.matrix(x)
@@ -285,4 +284,34 @@ as.compositional <- function(x,method=NULL,colmap='rainbow'){
         stop(paste("cannot convert an object of class",class(x),
                    "into an object of class compositional"))
     }
+}
+
+#' create a \code{counts} object
+#'
+#' Convert an object of class \code{matrix} or \code{data.frame} to an
+#' object of class \code{counts}
+#'
+#' @param x an object of class \code{matrix} or \code{data.frame}
+#' @param method either "chisq" (for the chi-square distance) or
+#'     "bray" (for the Bray-Curtis distance)
+#' @param colmap the colour map to be used in pie charts.
+#' @return an object of class \code{counts}
+#' @examples
+#' X <- matrix(c(0,100,0,30,11,2,94,36,0),nrow=3,ncol=3)
+#' rownames(X) <- 1:3
+#' colnames(X) <- c('a','b','c')
+#' comp <- as.counts(X)
+#' d <- diss(comp)
+#' @export
+as.counts <- function(x,method='chisq',colmap='rainbow'){
+    y <- as.matrix(x)
+    dimnames(y) <- dimnames(x)
+    out <- list(x=NULL,method=method,colmap=colmap)
+    class(out) <- "counts"
+    out$x <- y
+    nc <- ncol(y)
+    if (nc==3) out$x <- y[,c(3,1,2)]
+    if (nc>3) out$x <- y[,c(3,1,2,4:nc)]
+    if (nc<3) out$x <- y
+    return(out)
 }

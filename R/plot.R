@@ -33,6 +33,8 @@ plot.KDE <- function(x,pch='|',xlab="age [Ma]",ylab="",...){
 #' @param sname optional sample name. If \code{sname=NA}, all samples
 #'     are shown on a summary plot
 #' @param annotate add a time axis?
+#' @param pch symbol to be used to mark the sample points along the
+#'     x-axis. Change to \code{NA} to omit.
 #' @param ... optional parameters to be passed on to the
 #'     \code{summaryplot} function
 #' @examples
@@ -42,9 +44,9 @@ plot.KDE <- function(x,pch='|',xlab="age [Ma]",ylab="",...){
 #' @seealso KDEs summaryplot
 #' @method plot KDEs
 #' @export
-plot.KDEs <- function(x,sname=NA,annotate=TRUE,...){
+plot.KDEs <- function(x,sname=NA,annotate=TRUE,pch='|',...){
     if (is.na(sname)) {
-        summaryplot(x,...)
+        summaryplot(x,pch=pch,...)
     } else {
         if (x$themax>0){ # normalise
             M <- x$themax
@@ -52,9 +54,9 @@ plot.KDEs <- function(x,sname=NA,annotate=TRUE,...){
             M <- max(x$kdes[[sname]]$y)
         }
         if (annotate){
-            plot.KDE(x$kdes[[sname]],pch=NA,ylim=c(0,M),...)
+            plot.KDE(x$kdes[[sname]],pch=pch,ylim=c(0,M),...)
         } else {
-            plot.KDE(x$kdes[[sname]],pch=x$pch,axes=FALSE,xlab="",ylab="",ylim=c(0,M),...)
+            plot.KDE(x$kdes[[sname]],pch=pch,axes=FALSE,xlab="",ylab="",ylim=c(0,M),...)
         }
     }
 }
@@ -205,9 +207,11 @@ plot.PCA <- function(x,...){
 #' @method plot CA
 #' @export
 plot.CA <- function(x,...){
-    stats::biplot(x$rscore,x$cscore,var.axes=TRUE,
-                  xlab='Component 1',
-                  ylab='Component 2',...)
+    X <- x$rscore[, 1L:2]
+    X <- X %*% diag(x$cor[1L:2])
+    Y <- x$cscore[, 1L:2]
+    Y <- Y %*% diag(x$cor[1L:2])
+    stats::biplot(X,Y,xlab='Component 1',ylab='Component 2',...)
 }
 
 #' Plot an MDS configuration
@@ -294,18 +298,21 @@ plot.MDS <- function(x,nnlines=FALSE,pch=NA,pos=NULL,cex=1,
 #' Arranges kernel density estimates and pie charts in a grid format
 #' 
 #' @param ... a sequence of datasets of class \code{compositional},
-#' \code{KDEs}, or \code{distributional}
+#'     \code{KDEs}, or \code{distributional}
 #' @param ncol the number of columns
+#' @param pch (optional) symbol to be used to mark the sample points
+#'     along the x-axis of the KDEs (if appropriate).
 #' @return a summary plot of all the data comprised of KDEs for the
-#' datasets of class \code{KDEs}, pie charts for those of class
-#' \code{compositional} and histograms for those of class \code{distributional}.
+#'     datasets of class \code{KDEs}, pie charts for those of class
+#'     \code{compositional} and histograms for those of class
+#'     \code{distributional}.
 #' @examples
 #' data(Namib)
 #' KDEs <- KDEs(Namib$DZ,0,3000)
 #' summaryplot(KDEs,Namib$HM,Namib$PT,ncol=2)
 #' @seealso KDEs
 #' @export
-summaryplot <- function(...,ncol=1){
+summaryplot <- function(...,ncol=1,pch=NA){
     oldpar <- graphics::par(no.readonly=T)
     dlist <- list(...)
     dnames <- get.data.names(dlist)
@@ -315,7 +322,8 @@ summaryplot <- function(...,ncol=1){
     snames <- unique(unlist(lapply(dlist,names)))
     ns <- length(snames)
     w <- rep(1,nd) # column widths
-    w[which( classes %in% c("KDEs","distributional") )] <- 2
+    idist <- which( classes %in% c("KDEs","distributional") )
+    w[idist] <- 2
     w <- rep(c(1,w),ncol)
     nppc <- ceiling(ns/ncol)
     np <- (nppc+1)*ncol*(nd+1) # number of subpanels
@@ -335,7 +343,8 @@ summaryplot <- function(...,ncol=1){
             for (j in (si[i]+1):si[i+1]){
                 sname <- snames[j]
                 if (sname %in% names(d)){
-                    graphics::plot(d,sname,annotate=FALSE)
+                    if (k %in% idist) graphics::plot(d,sname,annotate=FALSE,pch=pch)
+                    else graphics::plot(d,sname,annotate=FALSE)
                 } else {
                     emptyplot()
                 }
