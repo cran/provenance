@@ -79,20 +79,21 @@ radialplot <- function(x,num=1,den=2,from=NA,to=NA,t0=NA,
     dat <- subset(x,components=c(num,den))
     X <- x2zs(dat$x)
     X$transformation <- 'arctan'
+    pcol <- IsoplotR:::set.ellipse.colours(ns=nrow(x$x),levels=levels,col=bg)
     IsoplotR:::radial.plot(X,show.numbers=show.numbers,pch=pch,
-                           levels=levels,clabel=clabel,bg=bg,...)
+                           levels=levels,clabel=clabel,bg=pcol,...)
     fit <- central(dat)
     ratio <- fit['theta',1]/fit['theta',2]
     err <- fit['err',1]*ratio
     rounded.ratio <- IsoplotR:::roundit(ratio,err,sigdig=sigdig)
-    line1 <- substitute(a~'='~b%+-%c~(1~sigma),
+    line1 <- substitute(a~'='~b%+-%c~(1*sigma),
                         list(a=label,
                              b=rounded.ratio[1],
                              c=rounded.ratio[2]))
-    line2 <- substitute('MSWD ='~a~', p('~chi^2*')='~b,
+    line2 <- substitute('MSWD ='~a~', p('*chi^2*')='~b,
                         list(a=signif(fit['mswd',1],sigdig),
                              b=signif(fit['p.value',1],sigdig)))
-    line3 <- substitute('dispersion ='~a~'%',
+    line3 <- substitute('dispersion ='~a*'%',
                         list(a=signif(100*fit['sigma',1],sigdig)))
     graphics::mtext(line1,line=2)
     graphics::mtext(line2,line=1)
@@ -129,13 +130,17 @@ x2zs <- function(x){
 #' of categories and the rows containing:
 #'
 #' \describe{
-#' \item{mu}{ the `central' composition. }
+#' \item{theta}{ the `central' composition. }
 #' \item{err}{ the standard error for the central composition. }
 #' \item{sigma}{ the overdispersion parameter, i.e. the coefficient of
 #'               variation of the underlying logistic normal
 #'               distribution. \code{central} computes a continuous
 #'               mixture model for each component (column)
 #'               separately. Covariance terms are not reported.}
+#' \item{LL}{ the lower limit of a `1 sigma' region for  code{theta}. }
+#' \item{UL}{ the upper limit of a `1 sigma' region for  code{theta}. }
+#' \item{mswd}{ the mean square of the weighted deviates, a.k.a.
+#'              reduced chi-square statistic.}
 #' \item{p.value}{ the p-value for age homogeneity }
 #' }
 #' @export
@@ -144,9 +149,9 @@ central <- function(x,...){
     else dat <- x$x
     ns <- nrow(dat)
     nc <- ncol(dat)
-    out <- matrix(0,5,nc)
+    out <- matrix(0,7,nc)
     colnames(out) <- colnames(dat)
-    rownames(out) <- c('theta','err','sigma','mswd','p.value')
+    rownames(out) <- c('theta','err','sigma','LL','UL','mswd','p.value')
     for (i in 1:nc){
         Nsj <- subset(dat,select=i)
         Nij <- rowSums(subset(dat,select=-i))
@@ -160,8 +165,8 @@ central.multivariate <- function(x,...){
     else dat <- x$x
     ns <- nrow(dat)
     nc <- ncol(dat)
-    out <- matrix(0,5,nc-1)
-    rownames(out) <- c('theta','err','sigma','mswd','p.value')
+    out <- matrix(0,7,nc-1)
+    rownames(out) <- c('theta','err','sigma','LL','UL','mswd','p.value')
     Nij <- subset(dat,select=nc) # use last column as denominator
     for (i in 1:(nc-1)){ # loop over all but the last column
         Nsj <- subset(dat,select=i)
@@ -175,6 +180,8 @@ central_helper <- function(Nsj,Nij){
     sigma <- 0.15 # convenient starting value
     Ns <- sum(Nsj)
     Ni <- sum(Nij)
+    if (Ns==0) return(c(0,0,0,0,0,1,1))
+    if (Ni==0) return(c(1,0,0,0,0,1,1))
     mj <- Nsj+Nij
     ispos <- (mj>0)
     pj <- 0*Nsj
@@ -201,7 +208,10 @@ central_helper <- function(Nsj,Nij){
     mswd <- Chi2/df    
     p.value <- 1-stats::pchisq(Chi2,df)
     err <- 1/(sqrt(sum(wj))*(1-theta)^2)
-    c(theta,err,sigma,mswd,p.value)
+    mu <- log(theta)-log(1-theta)
+    LL <- exp(mu-sigma)/(1+exp(mu-sigma))
+    UL <- exp(mu+sigma)/(1+exp(mu+sigma))
+    c(theta,err,sigma,LL,UL,mswd,p.value)
 }
 
 # maximum likelihood alternative to central_helper(Nsj,Nij)

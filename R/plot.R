@@ -387,7 +387,7 @@ plot.minsorting <- function(x,cumulative=FALSE,components=NULL,...){
     if (is.null(components)){
         plotval <- x$mfract
     } else {
-        plotval <- as.matrix(x$mfract[,components])
+        plotval <- x$mfract[,components,drop=FALSE]
         colnames(plotval) <- components
     }
     gsize <- as.numeric(rownames(plotval)) # grain size fraction
@@ -430,7 +430,7 @@ plot.minsorting <- function(x,cumulative=FALSE,components=NULL,...){
 plot.INDSCAL <- function(x,asp=1,pch=NA,pos=NULL,col='black',
                          bg='white',cex=1,xlab="X",ylab="Y",
                          xaxt='n',yaxt='n',...){
-    if (!is.na(pch) && is.null(pos)) { pos <- 1 }
+    if (!any(is.na(pch)) && !any(is.null(pos))) { pos <- 1 }
     graphics::plot(x$gspace,asp=asp,pch=pch,col=col,bg=bg,cex=cex,
                    xlab=xlab,ylab=ylab,xaxt=xaxt,yaxt=yaxt,...)
     graphics::text(x$gspace,labels=rownames(x$gspace),pos=pos,col=col,bg=bg,cex=cex)

@@ -292,7 +292,7 @@ ALR.default <- function(x,inverse=FALSE,...){
         class(out) <- "compositional"
         out$x <- num / den
     } else {
-        num <- log(dat[,1:(nc-1)])
+        num <- log(dat[,1:(nc-1),drop=FALSE])
         den <- log(subset(dat,select=nc)) %*% matrix(1,1,nc-1)
         out <- num - den
     }
@@ -405,7 +405,7 @@ subset.compositional <- function(x,subset=NULL,components=NULL,select=NULL,...){
     } else {
         j <- 1:ncol(x$x)
     }
-    out$x <- x$x[i,j]
+    out$x <- x$x[i,j,drop=FALSE]
     if (methods::is(x,"SRDcorrected")){
         out$restoration <- x$restoration[i]
         for (sname in rownames(out$x)){
@@ -421,7 +421,7 @@ subset.counts <- function(x,subset=NULL,components=NULL,select=NULL,...){
     if (methods::is(x,"ternary")){
         i <- which(rownames(x$raw) %in% rownames(out$x))
         j <- which(colnames(x$raw) %in% colnames(out$x))
-        out$raw <- x$raw[i,j]
+        out$raw <- x$raw[i,j,drop=FALSE]
     }
     out
 }
@@ -447,10 +447,10 @@ getdisslist <- function(slist){
 #' analysis on each of these and the feeds the resulting
 #' configurations into the \code{GPA()} function.
 #'
-#' @param ... a sequence of datasets of classes \code{distributional}
-#' and \code{compositional}
+#' @param ... a sequence of datasets of classes \code{distributional},n
+#'     \code{counts} and \code{compositional}
 #' @return an object of class \code{GPA}, i.e. a list containing the
-#' following items:
+#'     following items:
 #' 
 #' \code{points}: a two column vector with the coordinates of the
 #' group configuration
@@ -577,8 +577,11 @@ tr <- function (m){
 
 get.data.names <- function(dlist){
     out <- c()
-    for (d in dlist){
-        out <- c(out,d$name)
+    nd <- length(dlist)
+    for (i in 1:nd){
+        if (is.null(dlist[[i]]$name)) dname <- i
+        else dname <- dlist[[i]]$name
+        out <- c(out,dname)
     }
     out
 }
@@ -863,4 +866,9 @@ dmvnorm <- function(x,mean=rep(0,p),sigma=diag(p),log=FALSE) {
     if (log) 
         logretval
     else exp(logretval)
+}
+
+removeNAcols <- function(x){
+    bad <- apply(apply(x,2,is.na),2,all)
+    subset(x,select=!bad)
 }
