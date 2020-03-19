@@ -4,12 +4,26 @@
 \alias{plot.PCA}
 \title{Compositional biplot}
 \usage{
-\method{plot}{PCA}(x, ...)
+\method{plot}{PCA}(x, labelcol = "black", vectorcol = "red",
+  choices = 1L:2L, scale = 1, pc.biplot = FALSE, ...)
 }
 \arguments{
 \item{x}{an object of class \code{PCA}}
 
-\item{...}{optional arguments of the \code{biplot} function}
+\item{labelcol}{colour(s) of the sample labels (may be a vector).}
+
+\item{vectorcol}{colour of the vector loadings for the variables}
+
+\item{choices}{see the help pages of the generic \code{biplot}
+function.}
+
+\item{scale}{see the help pages of the generic \code{biplot}
+function.}
+
+\item{pc.biplot}{see the help pages of the generic \code{biplot}
+function.}
+
+\item{...}{optional arguments of the generic \code{biplot} function}
 }
 \description{
 Plot the results of a principal components analysis as a biplot

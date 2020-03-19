@@ -2,35 +2,41 @@
 % Please edit documentation in R/toolbox.R
 \name{MDS}
 \alias{MDS}
+\alias{MDS.default}
 \alias{MDS.compositional}
 \alias{MDS.counts}
 \alias{MDS.distributional}
-\alias{MDS.diss}
 \title{Multidimensional Scaling}
 \usage{
 MDS(x, ...)
+
+\method{MDS}{default}(x, classical = FALSE, k = 2, ...)
 
 \method{MDS}{compositional}(x, classical = FALSE, k = 2, ...)
 
 \method{MDS}{counts}(x, classical = FALSE, k = 2, ...)
 
-\method{MDS}{distributional}(x, classical = FALSE, k = 2, ...)
-
-\method{MDS}{diss}(x, classical = FALSE, k = 2, ...)
+\method{MDS}{distributional}(x, classical = FALSE, k = 2, nb = 0,
+  ...)
 }
 \arguments{
 \item{x}{an object of class \code{distributional},
-\code{compositional} or \code{diss}}
+\code{compositional}, \code{counts} or \code{diss}}
 
-\item{...}{optional arguments to be passed onto \code{diss} (if
-\code{x} is of class \code{compositional} or
-\code{distributional}) or onto \code{cmdscale} or \code{isoMDS}
-(if \code{x} is of class \code{dist}).}
+\item{...}{optional arguments to be passed onto \code{cmdscale} (if
+\code{classical=TRUE}) or \code{isoMDS} (if
+\code{classical=FALSE}).}
 
-\item{classical}{boolean flag indicating whether classical (TRUE)
-or nonmetric (FALSE) MDS should be used}
+\item{classical}{boolean flag indicating whether classical
+(\code{TRUE}) or nonmetric (\code{FALSE}) MDS should be used}
 
 \item{k}{the desired dimensionality of the solution}
+
+\item{nb}{number of bootstrap resamples. If \code{nb>0}, then
+\code{plot.MDS(...)} will visualise the sampling uncertainty as
+polygons (inspired by Nordsvan et al. 2020). The bigger
+\code{nb}, the slower the calculations. \code{nb=10} seems a
+good compromise.}
 }
 \value{
 an object of class \code{MDS}, i.e. a list containing the
@@ -54,4 +60,14 @@ of provenance data
 \examples{
 data(Namib)
 plot(MDS(Namib$Major,classical=TRUE))
+}
+\references{
+Nordsvan, A.R., Kirscher, U., Kirkland, C.L., Barham, M. and
+Brennan, D.T., 2020. Resampling (detrital) zircon age distributions
+for accurate multidimensional scaling solutions. Earth-Science
+Reviews, p.103149.
+
+Vermeesch, P., 2013, Multi-sample comparison of detrital age
+distributions. Chemical Geology v.341, 140-146,
+doi:10.1016/j.chemgeo.2013.01.010
 }

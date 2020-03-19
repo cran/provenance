@@ -4,12 +4,16 @@
 \alias{plot.CA}
 \title{Point-counting biplot}
 \usage{
-\method{plot}{CA}(x, ...)
+\method{plot}{CA}(x, labelcol = "black", vectorcol = "red", ...)
 }
 \arguments{
 \item{x}{an object of class \code{CA}}
 
-\item{...}{optional arguments of the \code{biplot} function}
+\item{labelcol}{colour of the sample labels (may be a vector).}
+
+\item{vectorcol}{colour of the vector loadings for the variables}
+
+\item{...}{optional arguments of the generic \code{biplot} function}
 }
 \description{
 Plot the results of a correspondence analysis as a biplot

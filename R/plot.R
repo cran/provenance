@@ -184,40 +184,73 @@ plot.GPA <- function(x,pch=NA,pos=NULL,col='black',bg='white',cex=1,...){
 #'
 #' Plot the results of a principal components analysis as a biplot
 #' @param x an object of class \code{PCA}
-#' @param ... optional arguments of the \code{biplot} function
+#' @param labelcol colour(s) of the sample labels (may be a vector).
+#' @param vectorcol colour of the vector loadings for the variables
+#' @param choices see the help pages of the generic \code{biplot}
+#'     function.
+#' @param scale see the help pages of the generic \code{biplot}
+#'     function.
+#' @param pc.biplot see the help pages of the generic \code{biplot}
+#'     function.
+#' @param ... optional arguments of the generic \code{biplot} function
 #' @examples
 #' data(Namib)
 #' plot(PCA(Namib$Major))
 #' @seealso PCA
 #' @method plot PCA
 #' @export
-plot.PCA <- function(x,...){
-    stats::biplot(x,...)
+plot.PCA <- function(x, labelcol='black', vectorcol='red',
+                     choices = 1L:2L, scale = 1, pc.biplot = FALSE, ...){
+    if (length(choices) != 2L) 
+        stop("length of choices must be 2")
+    if (!length(scores <- x$x)) 
+        stop(gettextf("object '%s' has no scores", deparse(substitute(x))), 
+             domain = NA)
+    if (is.complex(scores)) 
+        stop("biplots are not defined for complex PCA")
+    lam <- x$sdev[choices]
+    n <- NROW(scores)
+    lam <- lam * sqrt(n)
+    if (scale < 0 || scale > 1) 
+        warning("'scale' is outside [0, 1]")
+    if (scale != 0) 
+        lam <- lam^scale
+    else lam <- 1
+    if (pc.biplot) 
+        lam <- lam/sqrt(n)
+    biplotHelper(t(t(scores[,choices])/lam),
+                 t(t(x$rotation[, choices])*lam),
+                 labelcol=labelcol, vectorcol=vectorcol,...)
+    invisible()
 }
 
 #' Point-counting biplot
 #'
 #' Plot the results of a correspondence analysis as a biplot
 #' @param x an object of class \code{CA}
-#' @param ... optional arguments of the \code{biplot} function
+#' @param labelcol colour of the sample labels (may be a vector).
+#' @param vectorcol colour of the vector loadings for the variables
+#' @param ... optional arguments of the generic \code{biplot} function
 #' @examples
 #' data(Namib)
 #' plot(CA(Namib$PT))
 #' @seealso CA
 #' @method plot CA
 #' @export
-plot.CA <- function(x,...){
+plot.CA <- function(x,labelcol='black',vectorcol='red',...){
     X <- x$rscore[, 1L:2]
     X <- X %*% diag(x$cor[1L:2])
     Y <- x$cscore[, 1L:2]
     Y <- Y %*% diag(x$cor[1L:2])
-    stats::biplot(X,Y,xlab='Component 1',ylab='Component 2',...)
+    biplotHelper(X, Y, labelcol=labelcol, vectorcol=vectorcol,
+                 xlab='Component 1',ylab='Component 2',...)
+    invisible()
 }
 
 #' Plot an MDS configuration
 #'
 #' Plots the coordinates of a multidimensional scaling analysis as an
-#' X-Y scatter plot or 'map' and, if x$classical = FALSE, a Shepard
+#' X-Y scatter plot or `map' and, if x$classical = FALSE, a Shepard
 #' plot.
 #' 
 #' @param x an object of class \code{MDS}
@@ -253,6 +286,7 @@ plot.CA <- function(x,...){
 plot.MDS <- function(x,nnlines=FALSE,pch=NA,pos=NULL,cex=1,
                      col='black',bg='white',oma=rep(1,4),
                      mar=rep(2,4),mgp=c(2,1,0),xpd=NA,...){
+    ns <- nrow(x$points)/(x$nb+1)
     k <- ncol(x$points)
     graphics::par(mfrow=c(k-1,k-1), oma=oma, mar=mar, mgp=mgp, xpd=xpd)
     for (i in 1:(k-1)){
@@ -262,13 +296,25 @@ plot.MDS <- function(x,nnlines=FALSE,pch=NA,pos=NULL,cex=1,
             } else {
                 xlab <- paste0('Dim ',i)
                 ylab <- paste0('Dim ',j)
-                graphics::plot(x$points[,c(i,j)], type='n', asp=1, xlab=xlab, ylab=ylab, ...)
+                graphics::plot(x$points[,c(i,j)], type='n',
+                               asp=1, xlab=xlab, ylab=ylab, ...)
                 if (nnlines) { # draw lines between closest neighbours
                     if (is.na(pch)) pch=21
-                    plotlines(x$points[,c(i,j)],x$diss)
+                    plotlines(x$points[1:ns,c(i,j)],x$diss)
                 }
-                graphics::points(x$points[,c(i,j)], pch=pch, cex=cex, col=col, bg=bg)
-                graphics::text(x$points[,c(i,j)], labels = labels(x$diss), pos=pos, col=col, bg=bg)    
+                graphics::points(x$points[1:ns,c(i,j)],
+                                 pch=pch, cex=cex, col=col, bg=bg)
+                graphics::text(x$points[1:ns,c(i,j)], labels=labels(x$diss)[1:ns],
+                               pos=pos, col=col, bg=bg)
+                if (x$nb>0){ # bootstrap
+                    for (l in 1:ns){
+                        if (length(col)==ns) bcol <- col[l]
+                        else bcol <- col
+                        m <- ns + l + seq(from=1,to=ns*x$nb,by=ns) - 1
+                        chi <- grDevices::chull(x$points[m,c(i,j)])
+                        graphics::polygon(x$points[m[chi],c(i,j)],border=bcol)
+                    }
+                }
             }
         }
     }
@@ -282,7 +328,8 @@ plot.MDS <- function(x,nnlines=FALSE,pch=NA,pos=NULL,cex=1,
                 } else {
                     ylab <- "Distance/Disparity"
                     if (k>2) ylab <- paste0(ylab,' (Dims ',i,' & ',j,')')
-                    shep <- MASS::Shepard(x$diss, x$points[,c(i,j)])
+                    D <- as.matrix(x$diss)[1:ns,1:ns]
+                    shep <- MASS::Shepard(stats::as.dist(D), x$points[1:ns,c(i,j)])
                     graphics::plot(shep,pch=20,xlab="Dissimilarity",ylab=ylab)
                     graphics::lines(shep$x, shep$yf, type="S")
                     if (i==1 & j==2)
@@ -508,18 +555,15 @@ annotation.distributional <- function(x,height=NULL,...){
 
 ternary.ticks <- function(ticks=seq(0,1,0.25),ticklength=0.02){
     for (tick in ticks){
-        xtick <- xyz2xy(matrix(c(tick,1-tick-ticklength,ticklength,
-                                 tick,1-tick,0,
-                                 tick-ticklength,1-tick,ticklength),
-                               ncol=3,byrow=TRUE))
-        ytick <- xyz2xy(matrix(c(ticklength,tick,1-tick-ticklength,
-                                 0,tick,1-tick,
-                                 ticklength,tick-ticklength,1-tick),
-                               ncol=3,byrow=TRUE))
-        ztick <- xyz2xy(matrix(c(1-tick-ticklength,ticklength,tick,
-                                 1-tick,0,tick,
-                                 1-tick,ticklength,tick-ticklength),
-                               ncol=3,byrow=TRUE))
+        xtick <- xyz2xy(c(tick,1-tick-ticklength,ticklength),
+                        c(tick,1-tick,0),
+                        c(tick-ticklength,1-tick,ticklength))
+        ytick <- xyz2xy(c(ticklength,tick,1-tick-ticklength),
+                        c(0,tick,1-tick),
+                        c(ticklength,tick-ticklength,1-tick))
+        ztick <- xyz2xy(c(1-tick-ticklength,ticklength,tick),
+                        c(1-tick,0,tick),
+                        c(1-tick,ticklength,tick-ticklength))
         if (tick>0 & tick<1){
             graphics::lines(xtick)
             graphics::lines(ytick)
@@ -532,15 +576,9 @@ ternary.grid <- function(ticks=seq(0,1,0.25),
     oldpar <- graphics::par('col','lty','lwd')
     graphics::par(col=col,lty=lty,lwd=lwd)
     for (tick in ticks){
-        xline <- xyz2xy(matrix(c(tick,1-tick,0,
-                                 tick,0,1-tick),
-                               ncol=3,byrow=TRUE))
-        yline <- xyz2xy(matrix(c(0,tick,1-tick,
-                                 1-tick,tick,0),
-                               ncol=3,byrow=TRUE))
-        zline <- xyz2xy(matrix(c(1-tick,0,tick,
-                                 0,1-tick,tick),
-                               ncol=3,byrow=TRUE))
+        xline <- xyz2xy(c(tick,1-tick,0),c(tick,0,1-tick))
+        yline <- xyz2xy(c(0,tick,1-tick),c(1-tick,tick,0))
+        zline <- xyz2xy(c(1-tick,0,tick),c(0,1-tick,tick))
         if (tick>0 & tick<1){
             graphics::lines(xline)
             graphics::lines(yline)
@@ -555,12 +593,12 @@ ternary.lines <- function(type='empty',col='cornflowerblue',
     graphics::par(col=col,lty=lty,lwd=lwd)
     thelabels <- c('x','y','z')
     if (type=='QFL.descriptive'){
-        xy1 <- xyz2xy(matrix(c(90,0,10,10,0,90),ncol=3))
-        xy2 <- xyz2xy(matrix(c(90,0,0,90,10,10),ncol=3))
-        xy3 <- xyz2xy(matrix(c(10,10,90,0,0,90),ncol=3))
-        xy4 <- xyz2xy(matrix(c(50,10,50,10,0,80),ncol=3))
-        xy5 <- xyz2xy(matrix(c(80,0,10,50,10,50),ncol=3))
-        xy6 <- xyz2xy(matrix(c(10,50,80,0,10,50),ncol=3))
+        xy1 <- xyz2xy(c(90,10,0),c(0,10,90))
+        xy2 <- xyz2xy(c(90,0,10),c(0,90,10))
+        xy3 <- xyz2xy(c(10,90,0),c(10,0,90))
+        xy4 <- xyz2xy(c(50,50,0),c(10,10,80))
+        xy5 <- xyz2xy(c(80,10,10),c(0,50,50))
+        xy6 <- xyz2xy(c(10,80,10),c(50,0,50))
         graphics::lines(xy1); graphics::lines(xy2);
         graphics::lines(xy3); graphics::lines(xy4);
         graphics::lines(xy5); graphics::lines(xy6);
@@ -584,14 +622,14 @@ ternary.lines <- function(type='empty',col='cornflowerblue',
                        labels=expression(paste('litho-',bold('feldspathic'))))
         thelabels <- c('Q','F','L')
     } else if (type=='QFL.folk'){
-        xy1 <- xyz2xy(matrix(c(90,90,10,0,0,10),ncol=3))
-        xy2 <- xyz2xy(matrix(c(75,75,25,0,0,25),ncol=3))
-        xy3 <- xyz2xy(matrix(c(0,75,25,25/4,75,25*3/4),ncol=3))
-        xy4 <- xyz2xy(matrix(c(0,75,75,25*3/4,25,25/4),ncol=3))
-        xy5 <- xyz2xy(matrix(c(0,90,50,5,50,5),ncol=3))
+        xy1 <- xyz2xy(c(90,10,0),c(90,0,10))
+        xy2 <- xyz2xy(c(75,25,0),c(75,0,25))
+        xy3 <- xyz2xy(c(0,25,75),c(75,25/4,25*3/4))
+        xy4 <- xyz2xy(c(0,75,25),c(75,25*3/4,25/4))
+        xy5 <- xyz2xy(c(0,50,50),c(90,5,5))
         graphics::lines(xy1); graphics::lines(xy2);
         graphics::lines(xy3); graphics::lines(xy4); graphics::lines(xy5)
-        graphics::text(xyz2xy(c(20,-1,2)),labels='quartarenite',adj=0)
+        graphics::text(xyz2xy(c(20,-1,2)),labels='quartzarenite',adj=0)
         graphics::text(xyz2xy(c(40,-2,10)),labels='sublitharenite',adj=0)
         graphics::text(xyz2xy(c(40,10,-2)),labels='subarkose',adj=1)
         graphics::text(xyz2xy(c(30,70,10)),labels='arkose',srt=68)
@@ -600,13 +638,23 @@ ternary.lines <- function(type='empty',col='cornflowerblue',
         graphics::text(xyz2xy(c(30,10,70)),labels='litharenite',srt=-68)
         thelabels <- c('Q','F','L')
     } else if (type=='QFL.dickinson') {
-        xy1 <- xyz2xy(matrix(c(97,0,0,85,3,15),ncol=3))
-        xy2 <- xyz2xy(matrix(c(25,51.6,0,40,75,8.4),ncol=3))
+        xy1 <- xyz2xy(c(97,0,3),c(0,85,15))
+        xy2 <- xyz2xy(c(25,0,75),c(51.6,40,8.4))
         graphics::lines(xy1); graphics::lines(xy2)
         graphics::text(xyz2xy(c(20,40,40)),labels='magmatic arc')
         graphics::text(xyz2xy(c(55,15,30)),labels='recycled orogen')
         graphics::text(xyz2xy(c(50,45,5)),labels='continental block',srt=65)
         thelabels <- c('Q','F','L')
+    } else if (type=='QmFLt.dickinson') {
+        xy1 <- xyz2xy(c(89,0,11),c(0,77,23))
+        xyi1 <- ternary_intersection(c(89,0,11),c(0,77,23),
+                                     c(80,20,0),c(0,13,87))
+        xy2 <- rbind(xyi1,xyz2xy(c(0,13,87),test=TRUE))
+        graphics::lines(xy1); graphics::lines(xy2)
+        graphics::text(xyz2xy(c(20,40,40)),labels='magmatic arc')
+        graphics::text(xyz2xy(c(42,11,47)),labels='recycled orogen',srt=-58)
+        graphics::text(xyz2xy(c(45,47,8)),labels='continental block',srt=64)
+        thelabels <- c('Qm','F','Lt')
     }
     graphics::par(oldpar)
     return(thelabels)
@@ -622,22 +670,23 @@ plotpath <- function(X){
     }
 }
 
-xyz2xy <- function(xyz){
-    if (methods::is(xyz,"matrix")){
-        n <- nrow(xyz)
-        x <- xyz[,1]
-        y <- xyz[,2]
-        z <- xyz[,3]
-    } else {
-        n <- 1
-        x <- xyz[1]
-        y <- xyz[2]
-        z <- xyz[3]
-    }
-    xy <- matrix(0,nrow=n,ncol=2)
-    xy[,1] <- 0.5*(x+2*z)/(x+y+z)
-    xy[,2] <- sin(pi/3)*x/(x+y+z)
-    return(xy)
+xyz2xy <- function(...,test=FALSE){
+    xyz <- rbind(...)
+    x <- 0.5*(xyz[,1]+2*xyz[,3])/rowSums(xyz)
+    y <- sin(pi/3)*xyz[,1]/rowSums(xyz)
+    cbind(x,y)
+}
+
+ternary_intersection <- function(xyz11,xyz12,xyz21,xyz22){
+    xyz1 <- rbind(xyz11,xyz12)
+    xyz2 <- rbind(xyz21,xyz22)
+    xy1 <- xyz2xy(xyz1)
+    xy2 <- xyz2xy(xyz2)
+    b1 <- (xy1[2,'y']-xy1[1,'y'])/(xy1[2,'x']-xy1[1,'x'])
+    b2 <- (xy2[2,'y']-xy2[1,'y'])/(xy2[2,'x']-xy2[1,'x'])
+    xi <- (xy2[1,'y']-xy1[1,'y']+b1*xy1[1,'x']-b2*xy2[1,'x'])/(b1-b2)
+    yi <- xy1[1,'y']+b1*(xi-xy1[1,'x'])
+    c(xi,yi)
 }
 
 emptyplot <- function(){
@@ -648,4 +697,63 @@ emptyplot <- function(){
 saveplot <- function(f, d){
     grDevices::dev.set(d)
     grDevices::dev.copy2pdf(file=f)
+}
+
+# modified from stats::biplot.default
+biplotHelper <- function(x, y, var.axes = TRUE, labelcol='black', vectorcol='red',
+                         cex = rep(graphics::par("cex"), 2), xlabs = NULL,
+                         ylabs = NULL, expand = 1, xlim = NULL, ylim = NULL,
+                         arrow.len = 0.1, main = NULL, sub = NULL,
+                         xlab = NULL, ylab = NULL, ...){
+    n <- nrow(x)
+    p <- nrow(y)
+    if (missing(xlabs)) {
+        xlabs <- dimnames(x)[[1L]]
+        if (is.null(xlabs)) 
+            xlabs <- 1L:n
+    }
+    xlabs <- as.character(xlabs)
+    dimnames(x) <- list(xlabs, dimnames(x)[[2L]])
+    if (missing(ylabs)) {
+        ylabs <- dimnames(y)[[1L]]
+        if (is.null(ylabs)) 
+            ylabs <- paste("Var", 1L:p)
+    }
+    ylabs <- as.character(ylabs)
+    dimnames(y) <- list(ylabs, dimnames(y)[[2L]])
+    if (length(cex) == 1L) 
+        cex <- c(cex, cex)
+    unsigned.range <- function(x) c(-abs(min(x, na.rm = TRUE)),
+                                    abs(max(x, na.rm = TRUE)))
+    rangx1 <- unsigned.range(x[, 1L])
+    rangx2 <- unsigned.range(x[, 2L])
+    rangy1 <- unsigned.range(y[, 1L])
+    rangy2 <- unsigned.range(y[, 2L])
+    if (missing(xlim) && missing(ylim)) 
+        xlim <- ylim <- rangx1 <- rangx2 <- range(rangx1, rangx2)
+    else if (missing(xlim)) 
+        xlim <- rangx1
+    else if (missing(ylim)) 
+        ylim <- rangx2
+    ratio <- max(rangy1/rangx1, rangy2/rangx2)/expand
+    on.exit(graphics::par(op))
+    op <- graphics::par(pty = "s")
+    if (!is.null(main)) 
+        op <- c(op, graphics::par(mar = graphics::par("mar") + c(0, 0, 1, 0)))
+    graphics::plot(y, axes = FALSE, type = "p", xlim = xlim * ratio,
+                   ylim = ylim * ratio, xlab = "", ylab = "", col = vectorcol, ...)
+    graphics::axis(3, col = vectorcol, ...)
+    graphics::axis(4, col = vectorcol, ...)
+    graphics::box(col = 'black')
+    graphics::text(y, labels = ylabs, cex = cex[2L], col = vectorcol, ...)
+    if (var.axes) 
+        graphics::arrows(0, 0, y[, 1L] * 0.8, y[, 2L] * 0.8,
+                         col = vectorcol, length = arrow.len)
+    graphics::par(new = TRUE)
+    grDevices::dev.hold()
+    on.exit(grDevices::dev.flush(), add = TRUE)
+    graphics::plot(x, type = "n", xlim = xlim, ylim = ylim, col = labelcol, 
+                   xlab = xlab, ylab = ylab, sub = sub, main = main, ...)
+    graphics::text(x, xlabs, cex = cex[1L], col = labelcol, ...)
+    invisible()
 }

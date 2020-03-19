@@ -135,7 +135,8 @@ diss.counts <- function(x,method=NULL){
 #'
 #' Calculates the Bray-Curtis dissimilarity between two samples
 #' @param x a vector containing the first compositional sample
-#' @param y a vector of length(x) containing the second compositional sample
+#' @param y a vector of \code{length(x)} containing the second
+#'     compositional sample
 #' @return a scalar value
 #' @examples
 #' data(Namib)
@@ -151,14 +152,13 @@ bray.diss <- function(x,y){
 #' of provenance data
 #'
 #' @param x an object of class \code{distributional},
-#'     \code{compositional} or \code{diss}
-#' @param classical boolean flag indicating whether classical (TRUE)
-#'     or nonmetric (FALSE) MDS should be used
+#'     \code{compositional}, \code{counts} or \code{diss}
+#' @param classical boolean flag indicating whether classical
+#'     (\code{TRUE}) or nonmetric (\code{FALSE}) MDS should be used
 #' @param k the desired dimensionality of the solution
-#' @param ... optional arguments to be passed onto \code{diss} (if
-#'     \code{x} is of class \code{compositional} or
-#'     \code{distributional}) or onto \code{cmdscale} or \code{isoMDS}
-#'     (if \code{x} is of class \code{dist}).
+#' @param ... optional arguments to be passed onto \code{cmdscale} (if
+#'     \code{classical=TRUE}) or \code{isoMDS} (if
+#'     \code{classical=FALSE}).
 #' @return an object of class \code{MDS}, i.e. a list containing the
 #'     following items:
 #'
@@ -181,35 +181,57 @@ bray.diss <- function(x,y){
 MDS <- function(x,...){ UseMethod("MDS",x) }
 #' @rdname MDS
 #' @export
-MDS.compositional <- function(x,classical=FALSE,k=2,...){
-    d <- diss.compositional(x,...)
-    return(MDS.diss(d,classical=classical,k=k))
-}
-#' @rdname MDS
-#' @export
-MDS.counts <- function(x,classical=FALSE,k=2,...){
-    d <- diss.counts(x,...)
-    return(MDS.diss(d,classical=classical,k=k))
-}
-#' @rdname MDS
-#' @export
-MDS.distributional <- function(x,classical=FALSE,k=2,...){
-    d <- diss.distributional(x,...)
-    return(MDS.diss(d,classical=classical,k=k))
-}
-#' @rdname MDS
-#' @export
-MDS.diss <- function(x,classical=FALSE,k=2,...){
-    out <- list() 
+MDS.default <- function(x,classical=FALSE,k=2,...){
     if (classical){
-        out$points <- stats::cmdscale(x,k=k)
+        out <- list()
+        out$points <- stats::cmdscale(x,k=k,...)
     } else {
         out <- MASS::isoMDS(d=x,k=k,...)
     }
     out$classical <- classical
     out$diss <- x
+    out$nb <- 0
     class(out) <- "MDS"
     return(out)
+
+}
+#' @rdname MDS
+#' @export
+MDS.compositional <- function(x,classical=FALSE,k=2,...){
+    d <- diss.compositional(x,...)
+    MDS.default(d,classical=classical,k=k)
+}
+#' @rdname MDS
+#' @export
+MDS.counts <- function(x,classical=FALSE,k=2,...){
+    d <- diss.counts(x,...)
+    MDS.default(d,classical=classical,k=k)
+}
+#' @param nb number of bootstrap resamples. If \code{nb>0}, then
+#'     \code{plot.MDS(...)} will visualise the sampling uncertainty as
+#'     polygons (inspired by Nordsvan et al. 2020). The bigger
+#'     \code{nb}, the slower the calculations. \code{nb=10} seems a
+#'     good compromise.
+#' 
+#' @references
+#' Nordsvan, A.R., Kirscher, U., Kirkland, C.L., Barham, M. and
+#' Brennan, D.T., 2020. Resampling (detrital) zircon age distributions
+#' for accurate multidimensional scaling solutions. Earth-Science
+#' Reviews, p.103149.
+#' 
+#' Vermeesch, P., 2013, Multi-sample comparison of detrital age
+#' distributions. Chemical Geology v.341, 140-146,
+#' doi:10.1016/j.chemgeo.2013.01.010
+#' 
+#' @rdname MDS
+#' @export
+MDS.distributional <- function(x,classical=FALSE,k=2,nb=0,...){
+    if (nb>0) X <- resample(x,nb=nb)
+    else X <- x
+    d <- diss.distributional(X,...)
+    out <- MDS.default(d,classical=classical,k=k)
+    out$nb <- nb
+    out
 }
 
 #' Centred logratio transformation
@@ -311,7 +333,7 @@ ALR.compositional <- function(x,...){
 #' @param x an object of class \code{compositional}
 #' @param ... optional arguments to R's \code{princomp} function
 #' @return an object of classes \code{PCA}, which is synonymous to the
-#'     stats packages' \code{princomp} class.
+#'     stats package's \code{prcomp} class.
 #' @examples
 #' data(Namib)
 #' plot(MDS(Namib$Major,classical=TRUE))
@@ -326,7 +348,7 @@ PCA <- function(x,...){
     } else {
         dat <- x
     }
-    pc <- stats::princomp(dat,...)
+    pc <- stats::prcomp(dat,...)
     class(pc) <- append("PCA",class(pc))
     return(pc)
 }
@@ -339,7 +361,7 @@ PCA <- function(x,...){
 #' @param ... optional arguments to the \code{corresp} function of the
 #'     \code{MASS} package
 #' @return an object of classes \code{CA}, which is synonymous to the
-#'     MASS packages' \code{correspondence} class.
+#'     MASS package's \code{correspondence} class.
 #' @examples
 #' data(Namib)
 #' plot(CA(Namib$PT))
@@ -356,7 +378,7 @@ CA <- function(x,nf=2,...){
     return(out)
 }
 
-#' Get a subset of distributional data
+#' Get a subset of provenance data
 #'
 #' Return a subset of provenance data according to some specified
 #' indices
@@ -492,14 +514,15 @@ procrustes <- function(...) {
 #'
 #' Given a number of (2D) configurations, this function uses a
 #' combination of transformations (reflections, rotations,
-#' translations and scaling) to find a 'consensus' configuration which
+#' translations and scaling) to find a `consensus' configuration which
 #' best matches all the component configurations in a least-squares
 #' sense.
 #' 
 #' @param X a list of dissimilarity matrices
-#' @param scale boolean flag indicating if the transformation should include the scaling operation
-#' @return a two column vector with the coordinates of the
-#' group configuration
+#' @param scale boolean flag indicating if the transformation should
+#'     include the scaling operation
+#' @return a two column vector with the coordinates of the group
+#'     configuration
 #' @seealso procrustes
 #' @export
 GPA <- function(X,scale=TRUE){
@@ -644,10 +667,10 @@ names.ternary <- function(x){
 #' below a given level.
 #' @param f the size of the smallest resolvable fraction (0<f<1)
 #' @param p the probability that all n grains in the sample have missed
-#' at least one fraction of size f
+#' at least one fraction of size \code{f}
 #' @param n, the number of grains in the sample
 #' @return the number of grains needed to reduce the chance of missing
-#' at least one fraction f of the total population to less than p
+#' at least one fraction f of the total population to less than \code{p}
 #' @references Vermeesch, Pieter. "How many grains are needed for a
 #' provenance study?." Earth and Planetary Science Letters 224.3
 #' (2004): 441-451.
@@ -672,12 +695,13 @@ get.n <- function(p=0.05,f=0.05){
 #' For a given sample size, returns the likelihood of missing any
 #' fraction greater than a given size
 #' @param n the number of grains in the detrital sample
-#' @param f the size of the smallest resolvable fraction (0<f<1)
-#' @return the probability that all n grains in the sample have missed
-#' at least one fraction of size f
-#' @references Vermeesch, Pieter. "How many grains are needed for a
-#' provenance study?." Earth and Planetary Science Letters 224.3
-#' (2004): 441-451.
+#' @param f the size of the smallest resolvable fraction
+#'     (0<\code{f}<1)
+#' @return the probability that all \code{n} grains in the sample have
+#'     missed at least one fraction of size \code{f}
+#' @references Vermeesch,
+#'     Pieter. "How many grains are needed for a provenance study?."
+#'     Earth and Planetary Science Letters 224.3 (2004): 441-451.
 #' @examples
 #' print(get.p(60))
 #' print(get.p(117))
@@ -699,9 +723,9 @@ get.p <- function(n,f=0.05){
 #' @param p the required level of confidence
 #' @return the largest fraction that is sampled with at least (1-p) x
 #'     100\% certainty
-#' @references Vermeesch,
-#'     Pieter. "How many grains are needed for a provenance study?."
-#'     Earth and Planetary Science Letters 224.3 (2004): 441-451.
+#' @references
+#' Vermeesch, Pieter. "How many grains are needed for a provenance study?"
+#' Earth and Planetary Science Letters 224.3 (2004): 441-451.
 #' @examples
 #' print(get.f(60))
 #' print(get.f(117))
@@ -746,7 +770,8 @@ sumcols <- function(X,x){
 #' @param X a compositional dataset
 #' @param ... a series of new labels assigned to strings or vectors of
 #'     strings denoting the components that need amalgamating
-#' @return an object of the same class as X with fewer components
+#' @return an object of the same class as \code{X} with fewer
+#'     components
 #' @examples
 #' data(Namib)
 #' HMcomponents <- c("zr","tm","rt","TiOx","sph","ap","ep",
@@ -804,7 +829,8 @@ amalgamate.SRDcorrected <- function(X,...){
 #' @param X a distributional dataset
 #' @param ... a series of new labels assigned to strings or vectors of
 #'     strings denoting the samples that need amalgamating
-#' @return a distributional data object with fewer samples than X
+#' @return a distributional data object with fewer samples than
+#'     \code{X}
 #' @examples
 #' data(Namib)
 #' combined <- combine(Namib$DZ,
@@ -871,4 +897,18 @@ dmvnorm <- function(x,mean=rep(0,p),sigma=diag(p),log=FALSE) {
 removeNAcols <- function(x){
     bad <- apply(apply(x,2,is.na),2,all)
     subset(x,select=!bad)
+}
+
+resample <- function(x,nb=10){
+    snames <- names(x$x)
+    ns <- length(snames) # number of samples
+    out <- x
+    for (i in 1:nb){
+        for (j in 1:ns){
+            sname <- paste0(snames[j],'[',i,']')
+            ng <- length(x$x[[j]]) # number of grains
+            out$x[[sname]] <- sample(x$x[[j]],size=ng,replace=TRUE)
+        }
+    }
+    out
 }
