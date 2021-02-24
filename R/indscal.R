@@ -39,7 +39,7 @@
 #' @references
 #' de Leeuw, J., & Mair, P. (2009). Multidimensional scaling using
 #' majorization: The R package smacof. Journal of Statistical
-#' Software, 31(3), 1-30, < http://www.jstatsoft.org/v31/i03/>
+#' Software, 31(3), 1-30, < https://www.jstatsoft.org/v31/i03/>
 #' @examples
 #' data(Namib)
 #' plot(indscal(Namib$DZ,Namib$HM))
@@ -98,8 +98,7 @@ smacofIndDiff <- function (delta, ndim = 2, type = c("ratio", "ordinal"),
     for (j in 1:m) {
         wr <- appendList(wr, vmat(wgths[[j]]))
         vr <- appendList(vr, myGenInv(wr[[j]]))
-        dh <- appendList(dh, normDissN(diss[[j]], wgths[[j]], 
-            1))
+        dh <- appendList(dh, normDissN(diss[[j]], wgths[[j]], 1))
     }
     xr <- list()
     sold <- sf1 <- sf2 <- 0
