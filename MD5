@@ -1,4 +1,4 @@
-c81f8f9cb9f7a9b11ee842347885d8eb *DESCRIPTION
+4bbecec0489d51f64169e1bc677a255e *DESCRIPTION
 14693f15a858f445f434f15ad8f724cc *NAMESPACE
 4c8a244bc1cd1192ba82278dc6d1d57f *R/botev.R
 10817745ebdfe7f63fe3867ba26660ed *R/documentation.R
@@ -15,7 +15,7 @@ c7e819a3658658ffcb58a56801957c88 *R/provenance.R
 394b044bc34da4c328cba3b2fdd0b49b *R/ternary.R
 638e8e59617596c9be9a861262545a67 *R/toolbox.R
 b1b3f2a953e6f079a2035d2c423cf68a *README.md
-e643d51186596bf48fa5a4ffda7ac04e *data/Namib.rda
+06610d0bf2278108335ad0365a2e250c *data/Namib.rda
 09459578a42879922ada496cbd1269f8 *data/densities.rda
 5286ec9747762ede5e54d1c47ba0de80 *data/endmembers.rda
 65eb9daf6c95c3573032f15455a41a08 *inst/CITATION
@@ -23,7 +23,7 @@ e643d51186596bf48fa5a4ffda7ac04e *data/Namib.rda
 c5b3f63e8de5992e9b460fc80c2001cf *inst/DZerr.csv
 f8e35b58c4853f454596e140b2d6e7df *inst/HM.csv
 e8ff8826ef137b2e4c0e2edb89bdf1ff *inst/Major.csv
-30f5c0c1ed45e104772d6ac461b9cd78 *inst/PT.csv
+1c51c2489d2cf72637b535a2049f44c5 *inst/PT.csv
 11d6cda106c28a001b1f515d2b1d8611 *inst/PTHM.csv
 b83004dee761bb3ee956b8f71c1f90fb *inst/Trace.csv
 f03d5e752b0e5c7b85345b0c9f31628d *inst/densities.csv
@@ -55,7 +55,7 @@ fad0cf6c7e8fc233a4673267ccd62d93 *man/densities.Rd
 25f33b7ada39bc5452fc9f1864b48e01 *man/get.f.Rd
 66c76ecbb626d3803e003e396e1de31d *man/get.n.Rd
 7c94c616ea85272900053e1bb58ce188 *man/get.p.Rd
-01b631de0040a0115ad19ea7b1295e94 *man/indscal.Rd
+6134697add9e4d66e3a87414b44869ea *man/indscal.Rd
 98c4a2171897a16e302c44426f415096 *man/lines.ternary.Rd
 6faa3615977b64f0d1f29b16f4bd1e3f *man/minsorting.Rd
 5a839b9c9d63ef13f69def693da8bf90 *man/plot.CA.Rd
