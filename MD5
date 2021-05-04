@@ -1,4 +1,4 @@
-4bbecec0489d51f64169e1bc677a255e *DESCRIPTION
+21fbf18bfedbc70ca335e8c171ab923f *DESCRIPTION
 14693f15a858f445f434f15ad8f724cc *NAMESPACE
 4c8a244bc1cd1192ba82278dc6d1d57f *R/botev.R
 10817745ebdfe7f63fe3867ba26660ed *R/documentation.R
@@ -7,13 +7,13 @@
 6e19b2e71c11a7e9361bb7d4265f355d *R/io.R
 7cbe9cdd2b56d7e1604fda594225506b *R/kde.R
 641667fa0793d9a2eab526b77bb6b08b *R/minsorting.R
-a205de613f16eda35b0ffbf38f3671d9 *R/plot.R
+f49fa95787fca71988441e351beaf612 *R/plot.R
 c7e819a3658658ffcb58a56801957c88 *R/provenance.R
 1b205612b17c83e974e1e7c330d60512 *R/radialplot.R
 277cbd4b125ab43e973cb8ae5dffed94 *R/sircombe.R
 74559f2dc6dc1d73d8ca1f589154b3d0 *R/srd.R
 394b044bc34da4c328cba3b2fdd0b49b *R/ternary.R
-638e8e59617596c9be9a861262545a67 *R/toolbox.R
+7665ba22b2ca6860edda25877413a7b5 *R/toolbox.R
 b1b3f2a953e6f079a2035d2c423cf68a *README.md
 06610d0bf2278108335ad0365a2e250c *data/Namib.rda
 09459578a42879922ada496cbd1269f8 *data/densities.rda
@@ -65,8 +65,8 @@ b3c1a015ed47f968935d23712ee49371 *man/plot.INDSCAL.Rd
 292a9a4b97002f548d7ad022e854df81 *man/plot.KDEs.Rd
 f7ef2374b72209f13da25e7e22d8e897 *man/plot.MDS.Rd
 15d98dd31da8e3dcc6aeaba34b925617 *man/plot.PCA.Rd
-0b8823252bf5b899fd60db73ff0d8f3f *man/plot.compositional.Rd
-60936c6ceae8f3a105b6a7d7934e9dd5 *man/plot.distributional.Rd
+dab317bca3a4ac38465dbc6dcc68e777 *man/plot.compositional.Rd
+09c63f539ffbb2bc28a227cc3ba52b3f *man/plot.distributional.Rd
 391e22cb4c95998d1b5e0b57d376e9a6 *man/plot.minsorting.Rd
 63436f5e4dbfa925550c2111c4a962ca *man/plot.ternary.Rd
 338065b94fafbda54faf1531df5bc566 *man/points.ternary.Rd

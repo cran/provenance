@@ -678,7 +678,7 @@ names.ternary <- function(x){
 #' @export
 get.n <- function(p=0.05,f=0.05){
     n <- 1
-    while(T){
+    while(TRUE){
         pp <- get.p(n,f)
         if (pp<p){ break }
         else {n <- n+1}
@@ -703,10 +703,20 @@ get.n <- function(p=0.05,f=0.05){
 #' print(get.p(117))
 #' @export
 get.p <- function(n,f=0.05){
-    p <- 0
-    M <- 1/f
-    for (i in 1:M){
-        p <- p + (-1)^(i-1) * choose(M,i)*(1-i*f)^n
+    if (f<0.03){ # bins are approximately independent
+        p <- 1-(1-(1-f)^n)^(1/f)
+    } else { # bins are not independent
+        p <- 0
+        M <- 1/f
+        if (M*f == 1) A <- 0
+        else A <- 1
+        if (M*f < 1) B <- 1
+        else B <- 0
+        for (i in 1:(M-A)){
+            p1 <- choose(M-A,i)*(1-i*f)^n
+            p2 <- B*choose(M-1,i-1)*((M-i)*f)^n
+            p <- p + (-1)^(i-1) * (p1 + p2)
+        }
     }
     return(p)
 }
@@ -727,14 +737,8 @@ get.p <- function(n,f=0.05){
 #' print(get.f(117))
 #' @export
 get.f <- function(n,p=0.05){
-    fmin <- 0
-    fmax <- 1
-    for (i in 1:100){
-        f <- (fmax+fmin)/2
-        if (get.p(n,f)<p) { fmax <- f }
-        else { fmin <- f }
-    }
-    return((fmin+fmax)/2)
+    misfit <- function(f,n,p){ get.p(n,f) - p }
+    stats::uniroot(misfit,interval=c(0,1),n=n,p=p)$root
 }
 
 get.densities <- function(X,dtable){
