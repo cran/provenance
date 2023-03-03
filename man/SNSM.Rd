@@ -5,14 +5,13 @@
 \alias{SNSM}
 \title{varietal data example}
 \description{
-A list of varietal datasets including detrital zircon (\code{zr}),
-apatite (\code{ap}) and titanite (\code{tit}) compositions from the
-Sierra Nevada de Santa Marta, provided by L. Caracciolo (FAU
-Erlangen).
+A list of varietal datasets including detrital zircon
+(\code{zr}), apatite (\code{ap}) and titanite
+(\code{tit}) compositions from the Sierra Nevada de Santa
+Marta, provided by L. Caracciolo (FAU Erlangen).
 }
 \examples{
-data(SNSM)
-plot(indscal(zircon=SNSM$zr,apatite=SNSM$ap,titanite=SNSM$tit))
+plot(MDS(SNSM$tit))
 }
 \author{
 Luca Caracciolo, Diana Hatzenbuehler and David Chew.

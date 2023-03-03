@@ -16,6 +16,7 @@
   ylab = "Y",
   xaxt = "n",
   yaxt = "n",
+  option = 2,
   ...
 )
 }
@@ -39,9 +40,20 @@ symbols if pch != NA}
 
 \item{ylab}{a string with the label of the y axis}
 
-\item{xaxt}{if = 'y', adds ticks to the x axis}
+\item{xaxt}{if = 's', adds ticks to the x axis}
 
-\item{yaxt}{if = 'y', adds ticks to the y axis}
+\item{yaxt}{if = 's', adds ticks to the y axis}
+
+\item{option}{either:
+
+\code{0}: only plot the group configuration, do not show the source
+weights
+
+\code{1}: only show the source weights, do not plot the group
+configuration
+
+\code{2}: show both the group configuration and source weights in
+separate windows}
 
 \item{...}{optional arguments to the generic plot function}
 }

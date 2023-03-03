@@ -19,16 +19,30 @@ MDS(x, ...)
 
 \method{MDS}{distributional}(x, classical = FALSE, k = 2, nb = 0, ...)
 
-\method{MDS}{varietal}(x, classical = FALSE, k = 2, ...)
+\method{MDS}{varietal}(x, classical = FALSE, k = 2, nb = 0, ...)
 }
 \arguments{
 \item{x}{an object of class \code{distributional},
 \code{compositional}, \code{counts}, \code{varietal} or
 \code{diss}}
 
-\item{...}{optional arguments to be passed onto \code{cmdscale} (if
-\code{classical=TRUE}) or \code{isoMDS} (if
-\code{classical=FALSE}).}
+\item{...}{optional arguments
+
+If \code{x} has class \code{distributional}, \code{...} is passed
+on to \code{diss.distributional}.
+
+If \code{x} has class \code{compositional}, \code{...} is passed on
+to \code{diss.compositional}.
+
+If \code{x} has class \code{counts}, \code{...} is passed on to
+\code{diss.counts}.
+
+If \code{x} has class \code{varietal}, \code{...} is passed on to
+\code{diss.varietal}.
+
+Otherwise, \code{...} is passed on to \code{cmdscale} (if
+    \code{classical=TRUE}) or \code{isoMDS} (if
+    \code{classical=FALSE}).}
 
 \item{classical}{boolean flag indicating whether classical
 (\code{TRUE}) or nonmetric (\code{FALSE}) MDS should be used}

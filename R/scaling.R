@@ -9,9 +9,24 @@
 #' @param classical boolean flag indicating whether classical
 #'     (\code{TRUE}) or nonmetric (\code{FALSE}) MDS should be used
 #' @param k the desired dimensionality of the solution
-#' @param ... optional arguments to be passed onto \code{cmdscale} (if
+#' @param ... optional arguments
+#'
+#' If \code{x} has class \code{distributional}, \code{...} is passed
+#' on to \code{diss.distributional}.
+#' 
+#' If \code{x} has class \code{compositional}, \code{...} is passed on
+#' to \code{diss.compositional}.
+#'
+#' If \code{x} has class \code{counts}, \code{...} is passed on to
+#' \code{diss.counts}.
+#'
+#' If \code{x} has class \code{varietal}, \code{...} is passed on to
+#' \code{diss.varietal}.
+#'
+#' Otherwise, \code{...} is passed on to \code{cmdscale} (if
 #'     \code{classical=TRUE}) or \code{isoMDS} (if
 #'     \code{classical=FALSE}).
+#' 
 #' @return an object of class \code{MDS}, i.e. a list containing the
 #'     following items:
 #'
@@ -84,13 +99,19 @@ MDS.distributional <- function(x,classical=FALSE,k=2,nb=0,...){
     d <- diss.distributional(X,...)
     out <- MDS.default(d,classical=classical,k=k)
     out$nb <- nb
-    out
+    return(out)
 }
 #' @rdname MDS
 #' @export
-MDS.varietal <- function(x,classical=FALSE,k=2,...){
-    d <- diss(x)
-    MDS.default(d,classical=classical,k=k)
+MDS.varietal <- function(x,classical=FALSE,k=2,nb=0,...){
+    if (nb>0) X <- resample(x,nb=nb)
+    else X <- x
+    print('Constructing the dissimilarity matrix...')
+    d <- diss.varietal(X,...)
+    print('Computing the MDS configuration...')
+    out <- MDS.default(d,classical=classical,k=k)
+    out$nb <- nb
+    return(out)
 }
 
 #' Principal Component Analysis
@@ -178,8 +199,7 @@ CA <- function(x,nf=2,...){
 procrustes <- function(...) {
     slist <- list(...)
     names(slist) <- get.data.names(slist)
-    if (length(slist)==1 &
-        identical(class(slist[[1]]),'varietal')){
+    if (length(slist)==1 & 'varietal' %in% class(slist[[1]])){
         slist <- varietal2distributional(slist[[1]],bycol=TRUE)
     }
     disslist <- getdisslist(slist)
