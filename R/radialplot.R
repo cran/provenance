@@ -67,17 +67,18 @@
 #' @examples
 #' data(Namib)
 #' radialplot(Namib$PT,components=c('Q','P'))
+#' @importFrom IsoplotR radialplot
 #' @export
-radialplot <- function(x,num=1,den=2,from=NA,to=NA,t0=NA,
-                       sigdig=2,show.numbers=FALSE,pch=21,
-                       levels=NA,clabel="",
-                       bg=c("white","red"),title=TRUE,...){
+radialplot.counts <- function(x,num=1,den=2,from=NA,to=NA,t0=NA,
+                              sigdig=2,show.numbers=FALSE,pch=21,
+                              levels=NA,clabel="",
+                              bg=c("white","red"),title=TRUE,...){
     ncol <- ncol(x$x)
     if (all(is.numeric(num))) num <- colnames(x$x)[num]
     if (all(is.numeric(den))) den <- colnames(x$x)[den]
     label <- paste0('central ',num,'/',den,'-ratio')
     dat <- subset(x,components=c(num,den))
-    X <- x2zs(dat$x)
+    X <- x2zs(dat$x,from=from,to=to,t0=t0)
     X$transformation <- 'arctan'
     pcol <- IsoplotR:::set.ellipse.colours(ns=nrow(x$x),levels=levels,col=bg)
     IsoplotR:::radial.plot(X,show.numbers=show.numbers,pch=pch,
@@ -100,23 +101,27 @@ radialplot <- function(x,num=1,den=2,from=NA,to=NA,t0=NA,
     graphics::mtext(line3,line=0)
 }
 
-x2zs <- function(x){
+x2zs <- function(x,from=NA,to=NA,t0=NA){
     out <- list()
     n <- x[,1]
     m <- x[,2]
     out$z <- atan(sqrt((n+3/8)/(m+3/8)))
     out$s <- sqrt(1/(n+m+1/2))/2
-    out$z0 <- atan(sqrt(sum(n,na.rm=TRUE)/
-                        sum(m,na.rm=TRUE)))
-    out$from <- min(tan(out$z)^2)
-    out$to <- max(tan(out$z)^2)
+    if (is.na(t0)){
+        out$z0 <- atan(sqrt(sum(n,na.rm=TRUE)/
+                            sum(m,na.rm=TRUE)))
+    } else {
+        out$z0 <- atan(sqrt(t0))
+    }
+    out$from <- ifelse(is.na(from),min(tan(out$z)^2),from)
+    out$to <- ifelse(is.na(to),max(tan(out$z)^2),to)
     out$xlab <- paste(colnames(x),collapse='+')
     out
 }
 
 #' Calculate central compositions
 #'
-#' Computes the geometric mean composition of a continuous mixture of
+#' Computes the logratio mean composition of a continuous mixture of
 #' point-counting data.
 #'
 #' @details The central composition assumes that the observed
@@ -143,8 +148,9 @@ x2zs <- function(x){
 #'              reduced chi-square statistic.}
 #' \item{p.value}{ the p-value for age homogeneity }
 #' }
+#' @importFrom IsoplotR central
 #' @export
-central <- function(x,...){
+central.counts <- function(x,...){
     if ("ternary" %in% class(x)) dat <- x$raw
     else dat <- x$x
     ns <- nrow(dat)
@@ -160,7 +166,7 @@ central <- function(x,...){
     out
 }
 # calculates proportions relative to the last component
-central.multivariate <- function(x,...){
+central_multivariate <- function(x,...){
     if ("ternary" %in% class(x)) dat <- x$raw
     else dat <- x$x
     ns <- nrow(dat)

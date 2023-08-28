@@ -98,9 +98,7 @@ Kuiper.diss.distributional <- function(x,...){
 #' print(round(100*diss(Namib$DZ)))
 #' @return an object of class \code{diss}
 #' @seealso KS.diss bray.diss SH.diss Wasserstein.diss Kuiper.diss
-#' @rdname diss
-#' @export
-diss <- function(x,method,...){ UseMethod("diss",x) }
+#' @importFrom IsoplotR diss
 #' @rdname diss
 #' @export
 diss.distributional <- function(x,method=NULL,log=FALSE,verbose=FALSE,...) {
@@ -119,7 +117,7 @@ diss.distributional <- function(x,method=NULL,log=FALSE,verbose=FALSE,...) {
             }
             if (x$method=="SH"){
                 d[i,j] <- SH.diss(x,i,j,c.con=c2)
-            } else if (x$method%in%c("W2","W2_1D")){
+            } else if (x$method%in%c("W2","W2_1D","Wasserstein")){
                 if (log){
                     a <- log(x$x[[i]])
                     b <- log(x$x[[j]])
