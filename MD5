@@ -1,4 +1,4 @@
-18a1843bace4840130be9e16774fc6d6 *DESCRIPTION
+8c30e60bbb59eaf0aaf47ea02883b4f5 *DESCRIPTION
 80da28a0757a81c3767a70f6e218afcb *NAMESPACE
 54a4492fda698021bdf10ce13fb09aad *R/botev.R
 2f3980b036ed6e6106c496d0d2d8ad26 *R/combinatorics.R
@@ -9,14 +9,14 @@
 9d1e767b29cb9c5f65beaa06f02d18c5 *R/io.R
 7cbe9cdd2b56d7e1604fda594225506b *R/kde.R
 384af46cb592146ce61dff89a1e67ca7 *R/minsorting.R
-9bf67d5eef2fb49584f49560634a6039 *R/plot.R
+bb473c33eaff7c20fea6145ed2e98f27 *R/plot.R
 c7e819a3658658ffcb58a56801957c88 *R/provenance.R
-0255614420315d72a00e113080123977 *R/radialplot.R
+5d160847cd19ad90624c32d17da8568b *R/radialplot.R
 b7dfc8ac357edbfa7b8f7a2d7e4dc02f *R/scaling.R
 c51562fced299939699ff069dbe77cf1 *R/sircombe.R
 74559f2dc6dc1d73d8ca1f589154b3d0 *R/srd.R
 04ac3f18fceb8ed11439c36ddce7745c *R/ternary.R
-d0f441823437eb9fe22639fd4c3caa64 *R/toolbox.R
+d8e3786de53bb67a700e66b3830bc944 *R/toolbox.R
 2a0c06ef2873a9a601dc9912223a8186 *R/transport.R
 5f0c85f28d8c365e3d368d05698ecac9 *README.md
 6b8e525981c236fbc8818ee6a171e164 *data/Namib.rda
@@ -91,8 +91,8 @@ d212793c18762767ea2a583150bfbed8 *man/plot.minsorting.Rd
 63436f5e4dbfa925550c2111c4a962ca *man/plot.ternary.Rd
 338065b94fafbda54faf1531df5bc566 *man/points.ternary.Rd
 71f2d044903f408ca7cf71e2eee7db81 *man/procrustes.Rd
-4421a1eb9c1c661a8eb917e74d54fbda *man/provenance.Rd
-d3935ce86b7a5f1784215fba578aaa4f *man/radialplot.counts.Rd
+0ba2bc0a7e1792c74faf463ed163c2bd *man/provenance.Rd
+de3976c93eb37e5d6a2364d5a5fb8329 *man/radialplot.counts.Rd
 cfd7e9a48c891a87f4273a2a862e85bf *man/read.compositional.Rd
 e6cd507d09d1cb9ec712c904193acde6 *man/read.counts.Rd
 12f581e15c9059eb8f6bf9147cd7fb72 *man/read.densities.Rd
