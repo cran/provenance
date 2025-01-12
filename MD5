@@ -1,12 +1,12 @@
-8c30e60bbb59eaf0aaf47ea02883b4f5 *DESCRIPTION
+f01e42784b0404d34b8255e888fa0c0f *DESCRIPTION
 80da28a0757a81c3767a70f6e218afcb *NAMESPACE
 54a4492fda698021bdf10ce13fb09aad *R/botev.R
 2f3980b036ed6e6106c496d0d2d8ad26 *R/combinatorics.R
 6f3d574d7c7f60f2ae8d600314b931a9 *R/dissimilarities.R
 06da1d586ff4e514bc1846e8c538d8c7 *R/documentation.R
-96085bab2293a1796ac89b102b1c6917 *R/gui.R
+56c41c1ccea2064ffe02871dc9df620d *R/gui.R
 8946743a0fabd9b9342211bb8897a980 *R/indscal.R
-9d1e767b29cb9c5f65beaa06f02d18c5 *R/io.R
+8d9924c0f1692d452badb9377a196a30 *R/io.R
 7cbe9cdd2b56d7e1604fda594225506b *R/kde.R
 384af46cb592146ce61dff89a1e67ca7 *R/minsorting.R
 bb473c33eaff7c20fea6145ed2e98f27 *R/plot.R
@@ -18,7 +18,7 @@ c51562fced299939699ff069dbe77cf1 *R/sircombe.R
 04ac3f18fceb8ed11439c36ddce7745c *R/ternary.R
 d8e3786de53bb67a700e66b3830bc944 *R/toolbox.R
 2a0c06ef2873a9a601dc9912223a8186 *R/transport.R
-5f0c85f28d8c365e3d368d05698ecac9 *README.md
+1f8e9e4ed36c521c8119ed107ae7ac59 *README.md
 6b8e525981c236fbc8818ee6a171e164 *data/Namib.rda
 b2642c2f09f59a2115e46d1254576243 *data/SNSM.rda
 09459578a42879922ada496cbd1269f8 *data/densities.rda
@@ -96,7 +96,7 @@ de3976c93eb37e5d6a2364d5a5fb8329 *man/radialplot.counts.Rd
 cfd7e9a48c891a87f4273a2a862e85bf *man/read.compositional.Rd
 e6cd507d09d1cb9ec712c904193acde6 *man/read.counts.Rd
 12f581e15c9059eb8f6bf9147cd7fb72 *man/read.densities.Rd
-43c85d7701936dc451daf0d0c5d84ae2 *man/read.distributional.Rd
+f542826fa1227c70506d670d6913ea66 *man/read.distributional.Rd
 718ca6d09139a80eeabab1b6dad86c00 *man/read.varietal.Rd
 fc64d984fa4d63034291da99bfe911dc *man/restore.Rd
 402bd4b439589e20a1767f84e71ff6c0 *man/subset.Rd
